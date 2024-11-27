@@ -4,6 +4,7 @@ class Event{
     #name;
 
     constructor(name){
+        if(!name) throw new Error("O evento precisa ter um nome válido!");
         this.#name = name;
     }
 
@@ -12,6 +13,7 @@ class Event{
     }
 
     set name(newName){
+        if(!newName) throw new Error("O evento precisa ter um nome válido!");
         this.#name = newName;
     }
 }
@@ -66,5 +68,16 @@ class Member{
         for(let i = 0; i < event.length; i++){
             this.#favoriteEvents.removeTypeOfEvent(event[i]);
         }
+    }
+}
+
+class EventManagement{
+    #type;
+    #name;
+    #date;
+
+    constructor(type, name, date){
+        (type instanceof Event) ? this.#type = type : void 0;   
+        this.#name = name;
     }
 }
