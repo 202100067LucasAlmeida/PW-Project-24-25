@@ -9,7 +9,7 @@ class Event{
     }
 
     get name(){
-        this.#name;
+        return this.#name;
     }
 
     set name(newName){
@@ -23,6 +23,10 @@ class TypesOfEvents{
 
     constructor(){
         this.#typeOfEvents = [];
+    }
+
+    get typeOfEvents(){
+        return this.#typeOfEvents;
     }
 
     addTypeOfEvent(event){
@@ -42,6 +46,7 @@ class Member{
     #favoriteEvents;
 
     constructor(name){
+        if(!name) throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = name;
         this.#favoriteEvents = new TypesOfEvents();
     }
@@ -51,11 +56,12 @@ class Member{
     }
 
     set name(newName){
+        if(!newName) throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = newName;
     }
 
     get favoriteEvents(){
-        return this.#favoriteEvents;
+        return this.#favoriteEvents.typeOfEvents;
     }
 
     addFavoriteEvents(...event){
@@ -77,7 +83,9 @@ class EventManagement{
     #date;
 
     constructor(type, name, date){
-        (type instanceof Event) ? this.#type = type : void 0;   
+        (type instanceof Event) ? this.#type = type : void 0;  
+        if(!name) throw new Error('Forneça um nome válido!'); 
         this.#name = name;
+        this.#date = date;
     }
 }
