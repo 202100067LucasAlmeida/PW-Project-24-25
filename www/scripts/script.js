@@ -4,7 +4,7 @@ class Event{
     #name;
 
     constructor(name){
-        if(!name) throw new Error("O evento precisa ter um nome válido!");
+        if(!name) throw new Error("O evento precisa ter um nome!");
         this.#name = name;
     }
 
@@ -13,7 +13,7 @@ class Event{
     }
 
     set name(newName){
-        if(!newName) throw new Error("O evento precisa ter um nome válido!");
+        if(!newName) throw new Error("O evento precisa ter um nome!");
         this.#name = newName;
     }
 }
@@ -88,4 +88,27 @@ class EventManagement{
         this.#name = name;
         this.#date = date;
     }
+}
+
+
+
+
+function paginaMembros(){
+    modifyText('Membros');
+}
+
+function paginaEventos(){
+    modifyText('Eventos');
+}
+
+function paginaTipoEventos(){
+    modifyText('Tipos de Eventos');
+}
+
+function modifyText(text){
+    const tituloPag = document.getElementById('titulo-pagina');
+    if (tituloPag.firstChild) tituloPag.removeChild(tituloPag.firstChild);
+
+    let texto = document.createTextNode(text);
+    tituloPag.appendChild(texto);
 }
