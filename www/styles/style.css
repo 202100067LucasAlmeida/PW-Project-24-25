@@ -1,4 +1,14 @@
-h1{
+*,*::before,*::after{
+    box-sizing: border-box; 
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+#titulo{
     background-color: darkblue;
     color: white;
     font-family: 'Arial';
@@ -7,38 +17,42 @@ h1{
     padding: 0;
 }
 
-.Menu{
+.menu{
     background-color: rgba(186, 218, 233, 0.849);
     width: 100%;
     border-collapse: collapse;
     text-align: center;
 }
 
-.Menu td{
+.menu td{
     padding: 5px;
     border: 1px solid black;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
-.Menu a{
+.menu a{
     text-decoration: none;
     color: darkblue;
     font-weight: bold;
     font-family: 'Arial';
 }
 
-.Menu td:hover{
+.menu td:hover{
     background-color: rgba(123, 202, 238, 0.849);
 }
 
-.Menu a:hover{
+.menu a:hover{
     color: rgb(78, 78, 155);
 }
 
-#TituloPag{
+#titulo-pagina{
     color: darkblue;
     font-family: 'Arial';
     font-size: 40;
     text-align: center;
+}
+
+#lista-elementos{
+    position: center;
 }

@@ -8,16 +8,17 @@
     <link rel="stylesheet" href="styles/style.css" type="text/css">
 </head>
 <body>
-    <header id="Cabeçalho">
-        <h1 id="Titulo">Clube de Ciclismo - ESTSBike</h1>
-        <table class="Menu">
-            <tr id="Opcoes">
-                <th><a href="#" onclick="paginaMembros()">Membros</a></th>
-                <th><a href="#" onclick="paginaEventos()">Eventos</a></th>
-                <th><a href="#" onclick="paginaTipoEventos()">Tipos de Eventos</a></th>
+    <header id="cabecalho">
+        <h1 id="titulo">Clube de Ciclismo - ESTSBike</h1>
+        <table class="menu">
+            <tr id="opcoes">
+                <th><a href="#" onclick="Manager.paginaMembros()">Membros</a></th>
+                <th><a href="#" onclick="Manager.paginaEventos()">Eventos</a></th>
+                <th><a href="#" onclick="Manager.paginaTipoEventos()">Tipos de Eventos</a></th>
             </tr>
         </table>
     </header>
     <h2 id="titulo-pagina"></h2>
+    <div id="lista-elementos"></div>
 </body>
 </html> 

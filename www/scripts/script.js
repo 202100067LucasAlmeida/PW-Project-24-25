@@ -91,24 +91,68 @@ class EventManagement{
 }
 
 
+class Manager{
+    static paginaMembros(){
+        this.modifyText('Membros');
+        this.toTable([], ['Id', 'Nome']);
+    }
+    
+    static paginaEventos(){
+        this.modifyText('Eventos');
+    }
+    
+    static paginaTipoEventos(){
+        this.modifyText('Tipos de Eventos');
+    }
+    
+    static modifyText(text){
+        const tituloPag = document.getElementById('titulo-pagina');
+        if (tituloPag.firstChild) tituloPag.removeChild(tituloPag.firstChild);
+    
+        let texto = document.createTextNode(text);
+        tituloPag.appendChild(texto);
+    }
 
+    static toTable(arr, headers){
+        let conteiner = document.getElementById('lista-elementos');
+        conteiner.replaceChildren();
+        let table = document.createElement('table');
+        let header = this.toHeader(headers);
+        table.appendChild(header);
+        if(arr.length)
+            arr.forEach((element, i) => {
+                let row = this.toRow({name: element, id: i})
+                table.appendChild(row);
+            });
+        else
+            
+        conteiner.appendChild(table);
+    }
 
-function paginaMembros(){
-    modifyText('Membros');
-}
+    static toRow({name,id}){
+        let tr = document.createElement('tr');
+        let tdName = document.createElement('td');
+        let tdId = document.createElement('td');
+        let n = document.createTextNode(name);
+        let i = document.createTextNode(id+1);
+        tdName.appendChild(n);
+        tdId.appendChild(i);
 
-function paginaEventos(){
-    modifyText('Eventos');
-}
+        tr.appendChild(tdId);
+        tr.appendChild(tdName);
 
-function paginaTipoEventos(){
-    modifyText('Tipos de Eventos');
-}
+        return tr;
+    }
 
-function modifyText(text){
-    const tituloPag = document.getElementById('titulo-pagina');
-    if (tituloPag.firstChild) tituloPag.removeChild(tituloPag.firstChild);
-
-    let texto = document.createTextNode(text);
-    tituloPag.appendChild(texto);
+    static toHeader(names){
+        let tr = document.createElement('tr');
+        
+        names.forEach(n => {
+            let th = document.createElement('th');
+            let name = document.createTextNode(n)
+            th.appendChild(name);
+            tr.appendChild(th);
+        })
+        return tr;
+    }
 }
