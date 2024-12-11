@@ -55,4 +55,19 @@ body{
 
 #lista-elementos{
     position: center;
+} 
+
+#lista-elementos {
+    display: flex;
+    justify-content: center;
+}
+
+#lista-elementos > table > th{
+    border: 5px solid white;
+    padding: 5px;
+}
+
+#lista-elementos > table > tr{
+    background-color: darkblue;
+    color: aliceblue;
 }
