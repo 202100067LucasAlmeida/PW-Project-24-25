@@ -18,26 +18,26 @@ class Event{
     }
 }
 
-class TypesOfEvents{
-    #typeOfEvents;
+class ListOfElements{
+    #elements;
 
     constructor(){
-        this.#typeOfEvents = [];
+        this.#elements = [];
     }
 
-    get typeOfEvents(){
-        return this.#typeOfEvents;
+    get elements(){
+        return this.#elements;
     }
 
-    addTypeOfEvent(event){
-        (!this.#typeOfEvents.some(existingEvent => existingEvent === event) && event instanceof Event) ? 
-            this.#typeOfEvents.push(event) : void 0;
+    addElement(element){
+        (!this.#elements.some(existingEvent => existingEvent === element)) ? 
+            this.#elements.push(element) : void 0;
     }
 
-    removeTypeOfEvent(event){
-        let validationKey = event instanceof Event;
-        let position = (validationKey) ? this.#typeOfEvents.indexOf(event) : -1;
-        (!~position) ? this.#typeOfEvents.splice(position, 1) : void 0;
+    removeElement(element){
+        let position = this.#elements.indexOf(element);
+        ~position && this.#elements.splice(position, 1);
+        return this;
     }
 }
 
@@ -48,7 +48,7 @@ class Member{
     constructor(name){
         if(!name) throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = name;
-        this.#favoriteEvents = new TypesOfEvents();
+        this.#favoriteEvents = new ListOfElements();
     }
 
     get name(){
@@ -61,18 +61,18 @@ class Member{
     }
 
     get favoriteEvents(){
-        return this.#favoriteEvents.typeOfEvents;
+        return this.#favoriteEvents.elements;
     }
 
     addFavoriteEvents(...event){
         for(let i = 0; i < event.length; i++){
-            this.#favoriteEvents.addTypeOfEvent(event[i]);
+            this.#favoriteEvents.addElement(event[i]);
         }
     }
 
     removeFavoriteEvents(...event){
         for(let i = 0; i < event.length; i++){
-            this.#favoriteEvents.removeTypeOfEvent(event[i]);
+            this.#favoriteEvents.removeElement(event[i]);
         }
     }
 }
@@ -84,7 +84,7 @@ class EventManagement{
 
     constructor(type, name, date){
         (type instanceof Event) ? this.#type = type : void 0;  
-        if(!name) throw new Error('Forneça um nome válido!'); 
+        if(!name) throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
         this.#date = date;
     }
@@ -92,6 +92,7 @@ class EventManagement{
 
 
 class Manager{
+    
     static paginaMembros(){
         this.modifyText('Membros');
         this.toTable([], ['Id', 'Nome']);
@@ -99,10 +100,12 @@ class Manager{
     
     static paginaEventos(){
         this.modifyText('Eventos');
+        this.toTable([], ['Id', 'Tipo', 'Nome', 'Data']);
     }
     
     static paginaTipoEventos(){
         this.modifyText('Tipos de Eventos');
+        this.toTable([], ['Id', 'Nome']);
     }
     
     static modifyText(text){
@@ -133,11 +136,8 @@ class Manager{
         let tr = document.createElement('tr');
         let tdName = document.createElement('td');
         let tdId = document.createElement('td');
-        let n = document.createTextNode(name);
-        let i = document.createTextNode(id+1);
-        tdName.appendChild(n);
-        tdId.appendChild(i);
-
+        tdName.textContent = name;
+        tdId.textContent = id;
         tr.appendChild(tdId);
         tr.appendChild(tdName);
 
@@ -149,8 +149,7 @@ class Manager{
         
         names.forEach(n => {
             let th = document.createElement('th');
-            let name = document.createTextNode(n)
-            th.appendChild(name);
+            th.textContent = n;
             tr.appendChild(th);
         })
         return tr;

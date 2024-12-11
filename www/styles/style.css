@@ -24,9 +24,9 @@ body{
     text-align: center;
 }
 
-.menu td{
+.menu th{
     padding: 5px;
-    border: 1px solid black;
+    border: 1px solid white;
     cursor: pointer;
     transition: background-color 0.3s;
 }
