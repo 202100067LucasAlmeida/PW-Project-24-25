@@ -94,18 +94,21 @@ class EventManagement{
 class Manager{
     
     static paginaMembros(){
-        this.modifyText('Membros');
-        this.toTable([], ['Id', 'Nome']);
+        this.loadPage('Membros', [], ['Id', 'Nome'], 'membros');
     }
     
     static paginaEventos(){
-        this.modifyText('Eventos');
-        this.toTable([], ['Id', 'Tipo', 'Nome', 'Data']);
+        this.loadPage('Eventos', [], ['Id', 'Tipo', 'Nome', 'Data'], 'eventos');
     }
     
     static paginaTipoEventos(){
-        this.modifyText('Tipos de Eventos');
-        this.toTable([], ['Id', 'Nome']);
+        this.loadPage('Tipos de Evento', [], ['Id', 'Nome'], 'tpeventos');
+    }
+
+    static loadPage(name, arr, headers, text){
+        this.modifyText(name);
+        this.toTable(arr, headers);
+        this.createOptions(text);
     }
     
     static modifyText(text){
@@ -153,5 +156,86 @@ class Manager{
             tr.appendChild(th);
         })
         return tr;
+    }
+
+    static createOptions(text){
+        let menu = document.getElementById('menu-opcoes');
+        this.clearDiv('menu-opcoes');
+
+        let addBtn = document.createElement('button');
+        addBtn.textContent = 'Criar';
+        addBtn.onclick = this.selectForm(text);
+
+        let editBtn = document.createElement('button');
+        editBtn.textContent = 'Editar';
+
+
+        let deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Remover';
+
+        menu.appendChild(addBtn);
+        menu.appendChild(editBtn);
+        menu.appendChild(deleteBtn);
+    }
+
+    static selectForm(selector){
+        switch(selector){
+            case 'tpeventos':
+                return this.loadTypeEventFormPage.bind(this);
+                break;
+            case 'membros':
+                return this.loadMemberFormPage.bind(this);
+                break;
+            case 'eventos':
+                return this.loadEventFormPage.bind(this);
+                break;
+            default:
+                return void 0;
+        }
+    }
+
+    static loadTypeEventFormPage(){
+        this.modifyText('Criar Tipo de Evento');
+        this.clearDiv('lista-elementos');
+        this.clearDiv('menu-opcoes');
+
+        let formPlace = document.getElementById('lista-elementos');
+        let form = document.createElement('form');
+
+        let legend = document.createElement('legend');
+        legend.textContent = 'Tipo de evento';
+
+        let label = document.createElement('label');
+        label.for = 'event';
+        label.textContent = 'Nome do tipo de evento: ';
+
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'event';
+
+        let submit = document.createElement('input');
+        submit.id = 'submit';
+        submit.type = 'submit';
+        submit.value = 'Enviar';
+
+        form.appendChild(legend);
+        form.appendChild(label);
+        form.appendChild(input);
+        form.appendChild(submit);
+
+        formPlace.appendChild(form);
+    }
+
+    static loadEventFormPage(){
+        alert('Eventos!');
+    }
+
+    static loadMemberFormPage(){
+        alert('Membros!');
+    }
+
+    static clearDiv(id){
+        let div = document.getElementById(id);
+        if(div.children) Array.from(div.children).forEach(n => { div.removeChild(n); });
     }
 }
