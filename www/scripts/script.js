@@ -112,6 +112,7 @@ class EventManagement{
 class Manager{
     static typeOfEvents = new ListOfElements();
     static members = new ListOfElements();
+    static selectedRow = null;
 
     static paginaMembros(){
         this.loadPage('Membros', this.members.elements, ['Id', 'Nome'], 'membros');
@@ -164,6 +165,20 @@ class Manager{
         tr.appendChild(tdId);
         tr.appendChild(tdName);
 
+        tr.addEventListener('click', function() {
+            if (Manager.selectedRow) {
+                Manager.selectedRow.style.color = '';
+                Manager.selectedRow.style.backgroundColor = '';
+            }
+    
+            // Select the new row
+            tr.style.backgroundColor = 'rgb(75, 75, 255)';
+            
+            // Store reference to the clicked row
+            Manager.selectedRow = tr;
+            alert(`${Manager.selectedRow.firstChild.textContent} foi selecionado!`);
+        });
+
         return tr;
     }
 
@@ -188,10 +203,19 @@ class Manager{
 
         let editBtn = document.createElement('button');
         editBtn.textContent = 'Editar';
+        editBtn.onclick = this.selectEditForm(text);
 
 
         let deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Remover';
+        deleteBtn.onclick = function(){
+            if(Manager.selectedRow){
+                let id = Manager.selectedRow.firstChild.textContent;
+                let element = Manager.members.elements[id - 1];
+                Manager.members.removeElement(element);
+                Manager.paginaMembros();
+            }
+        }
 
         menu.appendChild(addBtn);
         menu.appendChild(editBtn);
@@ -322,6 +346,151 @@ class Manager{
     }
 
     static loadEventFormPage(){
+        alert('Eventos!');
+    }
+
+    static selectEditForm(selector){
+        switch(selector){
+            case 'tpeventos':
+                return this.EditTypeEventFormPage.bind(this);
+                break;
+            case 'membros':
+                return this.EditMemberFormPage.bind(this);
+                break;
+            case 'eventos':
+                return this.EditEventFormPage.bind(this);
+                break;
+            default:
+                return void 0;
+        }
+    }
+
+    static EditTypeEventFormPage(){
+        /**
+        this.modifyText('Editar o Tipo de Evento');
+        this.clearDiv('lista-elementos');
+        this.clearDiv('menu-opcoes');
+
+        let formPlace = document.getElementById('lista-elementos');
+        let form = document.createElement('form');
+
+        let eventTypeId = this.selectedRow.children[0].textContent;
+        let eventType = this.typeOfEvents.elements[eventTypeId - 1];
+
+        let label = document.createElement('label');
+        label.for = 'Tipo de Evento';
+        label.textContent = 'Nome do Tipo de Evento: ';
+
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'eventType';
+        input.value = eventType.name;
+
+        form.appendChild(label);
+        form.appendChild(input);
+
+        let submit = document.createElement('input');
+        submit.id = 'submit-eventType';
+        submit.type = 'submit';
+        submit.value = 'Aplicar';
+    
+        let back = document.createElement('input');
+        back.id = 'back-eventType';
+        back.type = 'button';
+        back.value = 'Voltar';
+
+        form.addEventListener('submit', function() {
+            eventType.name = input.value;
+
+            alert(`O Tipo de Evento foi atualizado.`);
+            this.paginaMembros();
+        });
+        */
+    }
+
+    static EditMemberFormPage() {
+        if (!this.selectedRow) {
+            alert('Nenhum membro selecionado!');
+            return;
+        }
+    
+        this.modifyText('Editar membro');
+        this.clearDiv('lista-elementos');
+        this.clearDiv('menu-opcoes');
+    
+        let formPlace = document.getElementById('lista-elementos');
+        let form = document.createElement('form');
+    
+        let memberId = this.selectedRow.children[0].textContent;
+        let member = this.members.elements[memberId - 1];
+    
+        let label = document.createElement('label');
+        label.for = 'member';
+        label.textContent = 'Nome do membro: ';
+    
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'member';
+        input.value = member.name;
+    
+        let label1 = document.createElement('label');
+        label1.for = 'fav-event';
+        label1.textContent = 'Tipos de Evento favoritos: ';
+    
+        let div = document.createElement('div');
+        div.id = 'fav-event';
+    
+        form.appendChild(label);
+        form.appendChild(input);
+        form.appendChild(label1);
+        form.appendChild(div);
+    
+        let selecteds = [];
+    
+        this.typeOfEvents.elements.forEach(n => {
+            let labelEvent = document.createElement('label');
+            labelEvent.textContent = n.name;
+            labelEvent.for = n.name;
+    
+            let checkbox = document.createElement('input');
+            checkbox.id = n.name;
+            checkbox.type = 'checkbox';
+            checkbox.checked = member.favoriteEvents.some(event => event.name === n.name);
+    
+            selecteds.push(checkbox);
+    
+            form.appendChild(checkbox);
+            form.appendChild(labelEvent);
+        });
+    
+        let submit = document.createElement('input');
+        submit.id = 'submit-member';
+        submit.type = 'submit';
+        submit.value = 'Aplicar';
+    
+        let back = document.createElement('input');
+        back.id = 'back-member';
+        back.type = 'button';
+        back.value = 'Voltar';
+        back.onclick = () => this.paginaMembros();
+    
+        form.addEventListener('submit', (event) => {
+            member.name = input.value;
+            member.editFavoriteEvents(this.typeOfEvents.elements.filter(event => 
+                selecteds.find(check => check.id === event.name).checked
+            ));
+            alert(`O Membro ${member.name} foi atualizado.`);
+            this.paginaMembros();
+        });
+    
+        form.appendChild(submit);
+        form.appendChild(back);
+    
+        formPlace.appendChild(form);
+    }
+    
+
+    static EditEventFormPage(){
         alert('Eventos!');
     }
 
