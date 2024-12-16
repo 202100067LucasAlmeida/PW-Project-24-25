@@ -87,6 +87,26 @@ class EventManagement{
         this.#name = name;
         this.#date = date;
     }
+
+    get type(){
+        return this.#type;
+    }
+
+    get name(){
+        return this.#name;
+    }
+
+    get date(){
+        return this.#date;
+    }
+
+    set date(newDate){
+        this.#date = newDate || this.#date;
+    }
+
+    
+
+
 }
 
 class Manager{
