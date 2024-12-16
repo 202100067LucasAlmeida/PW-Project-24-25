@@ -30,7 +30,7 @@ class ListOfElements{
     }
 
     addElement(element){
-        (!this.#elements.some(existingEvent => existingEvent === element)) ? 
+        (!this.#elements.some(existingEvent => existingEvent.name === element.name)) ? 
             this.#elements.push(element) : void 0;
     }
 
@@ -64,16 +64,15 @@ class Member{
         return this.#favoriteEvents.elements;
     }
 
-    addFavoriteEvents(...event){
-        for(let i = 0; i < event.length; i++){
-            this.#favoriteEvents.addElement(event[i]);
+    addFavoriteEvents(events){
+        for(let i = 0; i < events.length; i++){
+            this.#favoriteEvents.addElement(events[i]);
         }
     }
 
-    removeFavoriteEvents(...event){
-        for(let i = 0; i < event.length; i++){
-            this.#favoriteEvents.removeElement(event[i]);
-        }
+    editFavoriteEvents(event){
+        this.#favoriteEvents.elements.length = 0;
+        this.addFavoriteEvents(event);
     }
 }
 
@@ -90,11 +89,12 @@ class EventManagement{
     }
 }
 
-
 class Manager{
-    
+    static typeOfEvents = new ListOfElements();
+    static members = new ListOfElements();
+
     static paginaMembros(){
-        this.loadPage('Membros', [], ['Id', 'Nome'], 'membros');
+        this.loadPage('Membros', this.members.elements, ['Id', 'Nome'], 'membros');
     }
     
     static paginaEventos(){
@@ -102,7 +102,8 @@ class Manager{
     }
     
     static paginaTipoEventos(){
-        this.loadPage('Tipos de Evento', [], ['Id', 'Nome'], 'tpeventos');
+        let tpEventos = this.typeOfEvents.elements; 
+        this.loadPage('Tipos de Evento', tpEventos, ['Id', 'Nome'], 'tpeventos');
     }
 
     static loadPage(name, arr, headers, text){
@@ -120,18 +121,17 @@ class Manager{
     }
 
     static toTable(arr, headers){
+        this.clearDiv('lista-elementos');
         let conteiner = document.getElementById('lista-elementos');
-        conteiner.replaceChildren();
         let table = document.createElement('table');
         let header = this.toHeader(headers);
         table.appendChild(header);
-        if(arr.length)
+        if(arr.length){
             arr.forEach((element, i) => {
-                let row = this.toRow({name: element, id: i})
+                let row = this.toRow({name: element.name, id: i+1})
                 table.appendChild(row);
             });
-        else
-            
+        }
         conteiner.appendChild(table);
     }
 
@@ -154,7 +154,7 @@ class Manager{
             let th = document.createElement('th');
             th.textContent = n;
             tr.appendChild(th);
-        })
+        });
         return tr;
     }
 
@@ -195,15 +195,12 @@ class Manager{
     }
 
     static loadTypeEventFormPage(){
-        this.modifyText('Criar Tipo de Evento');
+        this.modifyText('Adicionar Tipo de Evento');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
 
         let formPlace = document.getElementById('lista-elementos');
         let form = document.createElement('form');
-
-        let legend = document.createElement('legend');
-        legend.textContent = 'Tipo de evento';
 
         let label = document.createElement('label');
         label.for = 'event';
@@ -216,12 +213,90 @@ class Manager{
         let submit = document.createElement('input');
         submit.id = 'submit';
         submit.type = 'submit';
-        submit.value = 'Enviar';
+        submit.value = 'Adicionar';
 
-        form.appendChild(legend);
+        let cancel = document.createElement('input');
+        cancel.id = 'cancel';
+        cancel.type = 'reset';
+        cancel.value = 'Cancelar';
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.addTypeOfEvent(input.value);
+        });
+
         form.appendChild(label);
         form.appendChild(input);
         form.appendChild(submit);
+        form.appendChild(cancel);
+
+        formPlace.appendChild(form);
+    }
+
+    static loadMemberFormPage(){
+        this.modifyText('Adicionar membro');
+        this.clearDiv('lista-elementos');
+        this.clearDiv('menu-opcoes');
+
+        let formPlace = document.getElementById('lista-elementos');
+        let form = document.createElement('form');
+
+        let label = document.createElement('label');
+        label.for = 'member';
+        label.textContent = 'Nome do membro: ';
+
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'member';
+
+        let label1 = document.createElement('label');
+        label1.for = 'fav-event';
+        label1.textContent = 'Tipos de Evento favoritos: ';
+
+        let div = document.createElement('div');
+        div.id = 'fav-event';
+
+        form.appendChild(label);
+        form.appendChild(input);
+        form.appendChild(label1);
+        form.appendChild(div);
+
+        let selecteds = [];
+
+        this.typeOfEvents.elements.forEach(n =>{
+            let labelEvent = document.createElement('label');
+            labelEvent.textContent = n.name;
+            label.for = n.name;
+
+            let checkbox = document.createElement('input');
+            checkbox.id = n.name;
+            checkbox.type = 'checkbox';
+
+            selecteds.push(checkbox);
+
+            form.appendChild(checkbox);
+            form.appendChild(labelEvent);
+        });
+
+        let submit = document.createElement('input');
+        submit.id = 'submit-member';
+        submit.type = 'submit';
+        submit.value = 'Adicionar';
+
+        let cancel = document.createElement('input');
+        cancel.id = 'cancel-member';
+        cancel.type = 'reset';
+        cancel.value = 'Cancelar';
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.addMember(input.value, this.typeOfEvents.elements.filter(event => 
+                selecteds.find(check => check.id === event.name).checked
+            ));
+        });
+
+        form.appendChild(submit);
+        form.appendChild(cancel);
 
         formPlace.appendChild(form);
     }
@@ -230,12 +305,31 @@ class Manager{
         alert('Eventos!');
     }
 
-    static loadMemberFormPage(){
-        alert('Membros!');
-    }
-
     static clearDiv(id){
         let div = document.getElementById(id);
-        if(div.children) Array.from(div.children).forEach(n => { div.removeChild(n); });
+        div.replaceChildren();
+    }
+
+    static addTypeOfEvent(name){
+        try {
+            var evento = new Event(name);
+            if(evento !== void 0) this.typeOfEvents.addElement(evento);
+            alert(`O Evento ${evento.name} foi adicionado aos tipos de evento.`);
+            this.paginaTipoEventos();
+        }catch(error){
+            alert(error.message);
+        }
+    }
+
+    static addMember(name, arr){
+        try{
+            var membro = new Member(name);
+            if(membro !== void 0) this.members.addElement(membro);
+            membro.addFavoriteEvents(arr);
+            alert(`O Membro ${membro.name} foi adicionado aos membros do clube.`);
+            this.paginaMembros();
+        }catch(error){
+            alert(error.message);
+        }
     }
 }
