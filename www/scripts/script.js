@@ -32,7 +32,9 @@ class ListOfElements{
     addElement(element){
         (!this.#elements.some(existingEvent => existingEvent.name === element.name)) ? 
             this.#elements.push(element) : void 0;
-    }
+        
+            return this;
+        }
 
     removeElement(element){
         let position = this.#elements.indexOf(element);
@@ -74,19 +76,33 @@ class Member{
         this.#favoriteEvents.elements.length = 0;
         this.addFavoriteEvents(event);
     }
+
+    subscribeEvent(event){
+        if(event instanceof EventManagement){
+            event.subscribe(this);
+        }
+    }
+
+    unsubscribeEvent(event){
+        if(event instanceof EventManagement){
+            event.unsubscribe(this);
+        }
+    }
 }
 
 class EventManagement{
     #type;
     #name;
     #date;
+    #members;
 
     constructor(type, name, date){
         (type instanceof Event) ? this.#type = type : void 0;  
         if(!name) throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
-        
-        //this.#date = date;
+        if(!date instanceof Date && !isNaN(date.getTime()))  throw new Error('É preciso fornecer uma data válida!');
+        this.#date = date;
+        this.#members = new ListOfElements();
     }
 
     get type(){
@@ -101,16 +117,28 @@ class EventManagement{
         return this.#date;
     }
 
-    set date(newDate){
-        this.#date = newDate || this.#date;
+    set date(value){
+        if(!value instanceof Date && !isNaN(value.getTime()))  throw new Error('É preciso fornecer uma data válida!');
+        this.#date = value;
     }
 
+    get members(){
+        return this.#members.elements();
+    }
+    
+    subscribe(member){
+        if(member instanceof Member) this.#members.addElement(member);
+    }
 
+    unsubscribe(member){
+        if(member instanceof Member) this.#members.removeElement(member);
+    }
 }
 
 class Manager{
     static typeOfEvents = new ListOfElements();
     static members = new ListOfElements();
+    static events = new ListOfElements();
     static selectedRow = null;
 
     static paginaMembros(){
@@ -163,16 +191,13 @@ class Manager{
         tr.append(tdId,tdName);
 
         tr.addEventListener('click', (event) => {
-            // Ao invés de Manager. podes usar this. 🙏🏽
             if (this.selectedRow) {
                 this.selectedRow.style.color = '';
                 this.selectedRow.style.backgroundColor = '';
             }
     
-            // Select the new row
             tr.style.backgroundColor = 'rgb(75, 75, 255)';
             
-            // Store reference to the clicked row
             this.selectedRow = tr;
         });
 
