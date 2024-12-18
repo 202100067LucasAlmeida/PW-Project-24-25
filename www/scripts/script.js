@@ -85,7 +85,8 @@ class EventManagement{
         (type instanceof Event) ? this.#type = type : void 0;  
         if(!name) throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
-        this.#date = date;
+        
+        //this.#date = date;
     }
 
     get type(){
@@ -103,8 +104,6 @@ class EventManagement{
     set date(newDate){
         this.#date = newDate || this.#date;
     }
-
-    
 
 
 }
@@ -137,8 +136,7 @@ class Manager{
         const tituloPag = document.getElementById('titulo-pagina');
         if (tituloPag.firstChild) tituloPag.removeChild(tituloPag.firstChild);
     
-        let texto = document.createTextNode(text);
-        tituloPag.appendChild(texto);
+        tituloPag.textContent = text;
     }
 
     static toTable(arr, headers){
@@ -162,21 +160,20 @@ class Manager{
         let tdId = document.createElement('td');
         tdName.textContent = name;
         tdId.textContent = id;
-        tr.appendChild(tdId);
-        tr.appendChild(tdName);
+        tr.append(tdId,tdName);
 
-        tr.addEventListener('click', function() {
-            if (Manager.selectedRow) {
-                Manager.selectedRow.style.color = '';
-                Manager.selectedRow.style.backgroundColor = '';
+        tr.addEventListener('click', (event) => {
+            // Ao invés de Manager. podes usar this. 🙏🏽
+            if (this.selectedRow) {
+                this.selectedRow.style.color = '';
+                this.selectedRow.style.backgroundColor = '';
             }
     
             // Select the new row
             tr.style.backgroundColor = 'rgb(75, 75, 255)';
             
             // Store reference to the clicked row
-            Manager.selectedRow = tr;
-            alert(`${Manager.selectedRow.firstChild.textContent} foi selecionado!`);
+            this.selectedRow = tr;
         });
 
         return tr;
@@ -217,9 +214,7 @@ class Manager{
             }
         }
 
-        menu.appendChild(addBtn);
-        menu.appendChild(editBtn);
-        menu.appendChild(deleteBtn);
+        menu.append(addBtn, editBtn, deleteBtn);
     }
 
     static selectForm(selector){
@@ -269,10 +264,7 @@ class Manager{
             this.addTypeOfEvent(input.value);
         });
 
-        form.appendChild(label);
-        form.appendChild(input);
-        form.appendChild(submit);
-        form.appendChild(cancel);
+        form.append(label, input, submit, cancel);
 
         formPlace.appendChild(form);
     }
@@ -300,10 +292,7 @@ class Manager{
         let div = document.createElement('div');
         div.id = 'fav-event';
 
-        form.appendChild(label);
-        form.appendChild(input);
-        form.appendChild(label1);
-        form.appendChild(div);
+        form.append(label, input, label1, div);
 
         let selecteds = [];
 
@@ -318,8 +307,7 @@ class Manager{
 
             selecteds.push(checkbox);
 
-            form.appendChild(checkbox);
-            form.appendChild(labelEvent);
+            form.append(checkbox, labelEvent);
         });
 
         let submit = document.createElement('input');
@@ -339,8 +327,7 @@ class Manager{
             ));
         });
 
-        form.appendChild(submit);
-        form.appendChild(cancel);
+        form.append(submit, cancel);
 
         formPlace.appendChild(form);
     }
@@ -366,7 +353,6 @@ class Manager{
     }
 
     static EditTypeEventFormPage(){
-        /**
         this.modifyText('Editar o Tipo de Evento');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
@@ -398,14 +384,17 @@ class Manager{
         back.id = 'back-eventType';
         back.type = 'button';
         back.value = 'Voltar';
+        back.onclick = () => this.paginaTipoEventos();
 
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
             eventType.name = input.value;
-
-            alert(`O Tipo de Evento foi atualizado.`);
-            this.paginaMembros();
+            this.paginaTipoEventos();
         });
-        */
+
+        form.append(submit, back)
+
+        formPlace.appendChild(form);
     }
 
     static EditMemberFormPage() {
@@ -503,10 +492,9 @@ class Manager{
         try {
             var evento = new Event(name);
             if(evento !== void 0) this.typeOfEvents.addElement(evento);
-            alert(`O Evento ${evento.name} foi adicionado aos tipos de evento.`);
             this.paginaTipoEventos();
         }catch(error){
-            alert(error.message);
+            this.showMessage(error.message);
         }
     }
 
@@ -515,10 +503,13 @@ class Manager{
             var membro = new Member(name);
             if(membro !== void 0) this.members.addElement(membro);
             membro.addFavoriteEvents(arr);
-            alert(`O Membro ${membro.name} foi adicionado aos membros do clube.`);
             this.paginaMembros();
         }catch(error){
-            alert(error.message);
+            this.showMessage(error.message);
         }
+    }
+
+    static showMessage(message){
+        alert(message);
     }
 }
