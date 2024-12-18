@@ -227,17 +227,9 @@ class Manager{
         editBtn.textContent = 'Editar';
         editBtn.onclick = this.selectEditForm(text);
 
-
         let deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Remover';
-        deleteBtn.onclick = function(){
-            if(Manager.selectedRow){
-                let id = Manager.selectedRow.firstChild.textContent;
-                let element = Manager.members.elements[id - 1];
-                Manager.members.removeElement(element);
-                Manager.paginaMembros();
-            }
-        }
+        deleteBtn.onclick = this.selectDeleteRow(text);
 
         menu.append(addBtn, editBtn, deleteBtn);
     }
@@ -364,20 +356,20 @@ class Manager{
     static selectEditForm(selector){
         switch(selector){
             case 'tpeventos':
-                return this.EditTypeEventFormPage.bind(this);
+                return this.editTypeEventFormPage.bind(this);
                 break;
             case 'membros':
-                return this.EditMemberFormPage.bind(this);
+                return this.editMemberFormPage.bind(this);
                 break;
             case 'eventos':
-                return this.EditEventFormPage.bind(this);
+                return this.editEventFormPage.bind(this);
                 break;
             default:
                 return void 0;
         }
     }
 
-    static EditTypeEventFormPage(){
+    static editTypeEventFormPage(){
         this.modifyText('Editar o Tipo de Evento');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
@@ -422,7 +414,7 @@ class Manager{
         formPlace.appendChild(form);
     }
 
-    static EditMemberFormPage() {
+    static editMemberFormPage() {
         if (!this.selectedRow) {
             alert('Nenhum membro selecionado!');
             return;
@@ -504,8 +496,41 @@ class Manager{
     }
     
 
-    static EditEventFormPage(){
+    static editEventFormPage(){
         alert('Eventos!');
+    }
+
+    static selectDeleteRow(selector){
+        switch(selector){
+            case 'tpeventos':
+                return this.deleteTypeEvent.bind(this);
+                break;
+            case 'membros':
+                //return this.deleteMember.bind(this);
+                break;
+            case 'eventos':
+                //return this.deleteEvent.bind(this);
+                break;
+            default:
+                return void 0;
+        }
+    }
+
+    static deleteTypeEvent(){
+        if(this.selectedRow){
+            let id = this.selectedRow.firstChild.textContent
+            let element = this.typeOfEvents.elements[id - 1];
+
+            if(this.members.elements.forEach(m => m.favoriteEvents.some(tpevent => tpevent.name === element.name))){
+                throw new Error("Não pode apagar um tipo de evento que seja favorito de um membro")
+            }
+            //else if(this.events.some(evnt => evnt.type.name === element.name)){
+            //    throw new Error("Não pode apagar um tipo de evento que seja usado por um evento")
+            //}
+            else{
+                this.typeOfEvents.removeElement(element);
+            }
+        }
     }
 
     static clearDiv(id){
