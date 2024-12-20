@@ -85,3 +85,51 @@ body{
 #rodape > p{
     color: aliceblue;
 }
+
+#menu-opcoes{
+    display: flex;
+    justify-content: center;
+}
+#menu-opcoes > button{
+    background-color: darkblue;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#menu-opcoes > button:hover{
+    background-color: rgb(78, 78, 155);
+}
+#submit{
+    background-color: darkblue;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#submit > button:hover{
+    background-color: rgb(78, 78, 155);
+}
+#cancel{
+    background-color: darkblue;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#cancel > button:hover{
+    background-color: rgb(78, 78, 155);
+}
+
+#member{
+    display: flex;
+    background-color: rgba(186, 218, 233, 0.849);
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+
+#error-message{
+    color: red;
+    font-family: 'Arial';
+    font-size: 20;
+    text-align: center;
+}

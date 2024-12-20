@@ -143,15 +143,18 @@ class Manager{
 
     static paginaMembros(){
         this.loadPage('Membros', this.members.elements, ['Id', 'Nome'], 'membros');
+        this.selectedRow = null;
     }
     
     static paginaEventos(){
         this.loadPage('Eventos', [], ['Id', 'Tipo', 'Nome', 'Data'], 'eventos');
+        this.selectedRow = null;
     }
     
     static paginaTipoEventos(){
         let tpEventos = this.typeOfEvents.elements; 
         this.loadPage('Tipos de Evento', tpEventos, ['Id', 'Nome'], 'tpeventos');
+        this.selectedRow = null;
     }
 
     static loadPage(name, arr, headers, text){
@@ -191,6 +194,9 @@ class Manager{
         tr.append(tdId,tdName);
 
         tr.addEventListener('click', (event) => {
+            const errorMessageElement = document.getElementById('error-message');
+            errorMessageElement.style.display = 'none';
+
             if (this.selectedRow) {
                 this.selectedRow.style.color = '';
                 this.selectedRow.style.backgroundColor = '';
@@ -238,13 +244,10 @@ class Manager{
         switch(selector){
             case 'tpeventos':
                 return this.loadTypeEventFormPage.bind(this);
-                break;
             case 'membros':
                 return this.loadMemberFormPage.bind(this);
-                break;
             case 'eventos':
                 return this.loadEventFormPage.bind(this);
-                break;
             default:
                 return void 0;
         }
@@ -357,13 +360,10 @@ class Manager{
         switch(selector){
             case 'tpeventos':
                 return this.editTypeEventFormPage.bind(this);
-                break;
             case 'membros':
                 return this.editMemberFormPage.bind(this);
-                break;
             case 'eventos':
                 return this.editEventFormPage.bind(this);
-                break;
             default:
                 return void 0;
         }
@@ -504,32 +504,55 @@ class Manager{
         switch(selector){
             case 'tpeventos':
                 return this.deleteTypeEvent.bind(this);
-                break;
             case 'membros':
-                //return this.deleteMember.bind(this);
-                break;
+                return this.deleteMember.bind(this);
             case 'eventos':
                 //return this.deleteEvent.bind(this);
-                break;
             default:
                 return void 0;
         }
     }
 
     static deleteTypeEvent(){
+        let errorMessage = document.getElementById('error-message');
+
         if(this.selectedRow){
             let id = this.selectedRow.firstChild.textContent
             let element = this.typeOfEvents.elements[id - 1];
+            let errorMessage = document.getElementById('error-message');
 
-            if(this.members.elements.forEach(m => m.favoriteEvents.some(tpevent => tpevent.name === element.name))){
-                throw new Error("Não pode apagar um tipo de evento que seja favorito de um membro")
+            try {
+                if (this.members.elements.some(m => m.favoriteEvents.some(tpevent => tpevent.name === element.name))) {
+                    throw new Error("Não pode apagar um tipo de evento que seja favorito de um membro");
+                } else if (this.events.elements.some(evnt => evnt.type.name === element.name)) {
+                    throw new Error("Não pode apagar um tipo de evento que seja usado por um evento");
+                } else {
+                    this.typeOfEvents.removeElement(element);
+                }
+                this.paginaTipoEventos();
+                this.selectedRow = null;
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            this.paginaTipoEventos();
+            this.selectedRow = null;
             }
-            //else if(this.events.some(evnt => evnt.type.name === element.name)){
-            //    throw new Error("Não pode apagar um tipo de evento que seja usado por um evento")
-            //}
-            else{
-                this.typeOfEvents.removeElement(element);
-            }
+        }
+        else{
+            alert('Nenhum tipo de evento selecionado!');
+        }
+    }
+
+    static deleteMember(){
+        if(this.selectedRow){
+            let id = this.selectedRow.firstChild.textContent
+            let element = this.members.elements[id - 1];
+            this.members.removeElement(element);
+            this.paginaMembros();
+            this.selectedRow = null;
+        }
+        else{
+            alert('Nenhum membro selecionado!');
         }
     }
 
