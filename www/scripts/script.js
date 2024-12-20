@@ -21,7 +21,7 @@ class Event{
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
     constructor(name){
-        if(!name) throw new Error("O evento precisa ter um nome!");
+        if(!name && typeof name !== "string") throw new Error("O evento precisa ter um nome!");
         this.#name = name;
     }
 
@@ -38,7 +38,7 @@ class Event{
      * @param {string} newName - O novo nome do evento.
      */
     set name(newName){
-        if(!newName) throw new Error("O evento precisa ter um nome!");
+        if(!newName && typeof newName !== "string") throw new Error("O evento precisa ter um nome!");
         this.#name = newName;
     }
 }
@@ -111,7 +111,7 @@ class Member{
      * @param {string} name - O nome do membro.
      */
     constructor(name){
-        if(!name) throw new Error('É preciso fornecer um nome ao membro!');
+        if(!name && typeof name !== "string") throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = name;
         this.#favoriteEvents = new ListOfElements();
     }
@@ -129,7 +129,7 @@ class Member{
      * @param {string} newName - O novo nome do membro.
      */
     set name(newName){
-        if(!newName) throw new Error('É preciso fornecer um nome ao membro!');
+        if(!newName && typeof newName !== "string") throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = newName;
     }
 
@@ -206,8 +206,9 @@ class EventManagement{
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
     constructor(type, name, date){
-        (type instanceof Event) ? this.#type = type : void 0;  
-        if(!name) throw new Error('É preciso fornecer um nome ao Evento!'); 
+        if(!type instanceof Event) throw new Error('É preciso fornecer um Tipo de Evento válido!');
+        this.#type = type;  
+        if(!name && typeof name !== "string") throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
         if(!date instanceof Date && !isNaN(date.getTime()))  throw new Error('É preciso fornecer uma data válida!');
         this.#date = date;
@@ -232,7 +233,16 @@ class EventManagement{
 
     /**
      * Define o nome do evento.
-     * @returns {string} A data do evento.
+     * 
+     */
+    set name(newName){
+        if(!newName && typeof newName !== "string") throw new Error('É preciso fornecer um nome ao Evento!');
+        this.#name = newName;
+    }
+
+    /**
+     * Retorna a data do evento.
+     * @returns {Date} A data do evento.
      */
     get date(){
         return this.#date;
@@ -294,7 +304,8 @@ class Manager{
      * Carraga a página de membros.
      */
     static paginaMembros(){
-        this.loadPage('Membros', this.members.elements, ['Id', 'Nome'], 'membros');
+        let membros = this.members.elements;
+        this.loadPage('Membros', membros, ['Id', 'Nome'], 'membros');
         this.selectedRow = null;
     }
     
@@ -302,7 +313,8 @@ class Manager{
      * Carrega a página de eventos.
      */
     static paginaEventos(){
-        this.loadPage('Eventos', [], ['Id', 'Tipo', 'Nome', 'Data'], 'eventos');
+        let eventos = this.events.elements;
+        this.loadPage('Eventos', eventos, ['Id', 'Nome', 'Tipo', 'Data'], 'eventos');
         this.selectedRow = null;
     }
     
@@ -352,7 +364,10 @@ class Manager{
         table.appendChild(header);
         if(arr.length){
             arr.forEach((element, i) => {
-                let row = this.toRow({name: element.name, id: i+1})
+                let row = null;
+                (element instanceof EventManagement) ? 
+                row = this.toRow({name: element.name, id: i+1, type: element.type.name, date: element.date}) :
+                row = this.toRow({name: element.name, id: i+1});
                 table.appendChild(row);
             });
         }
@@ -364,13 +379,23 @@ class Manager{
      * @param {Object} obj - O objeto a ser convertido.
      * @returns {Element} A linha da tabela.
      */
-    static toRow({name,id}){
+    static toRow({name, id, type = null, date = null}){
         let tr = document.createElement('tr');
+
         let tdName = document.createElement('td');
         let tdId = document.createElement('td');
+        let tdType = document.createElement('td');
+        let tdDate = document.createElement('td');
+
         tdName.textContent = name;
         tdId.textContent = id;
+
         tr.append(tdId,tdName);
+        if(type && date){
+            tdType.textContent = type;
+            tdDate.textContent = this.formatDate(date);
+            tr.append(tdType,tdDate); 
+        }
 
         tr.addEventListener('click', (event) => {
             const errorMessageElement = document.getElementById('error-message');
@@ -450,7 +475,7 @@ class Manager{
      * Carrega a página de formulário de tipo de evento.
      */
     static loadTypeEventFormPage(){
-        this.modifyText('Adicionar Tipo de Evento');
+        this.modifyText('Adicionar novo Tipo de Evento');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
 
@@ -467,18 +492,17 @@ class Manager{
 
         let submit = document.createElement('input');
         submit.id = 'submit';
-        submit.type = 'submit';
+        submit.type = 'button';
         submit.value = 'Adicionar';
+        submit.addEventListener('click', (event) =>
+            this.addTypeOfEvent(input.value)
+        );
+
 
         let cancel = document.createElement('input');
         cancel.id = 'cancel';
         cancel.type = 'reset';
         cancel.value = 'Cancelar';
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            this.addTypeOfEvent(input.value);
-        });
 
         form.append(label, input, submit, cancel);
 
@@ -489,7 +513,7 @@ class Manager{
      * Carrega a página de formulário de membro.
      */
     static loadMemberFormPage(){
-        this.modifyText('Adicionar membro');
+        this.modifyText('Adicionar novo Membro');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
 
@@ -503,6 +527,7 @@ class Manager{
         let input = document.createElement('input');
         input.type = 'text';
         input.id = 'member';
+        input.placeholder = 'Primeiro e último nome';
 
         let label1 = document.createElement('label');
         label1.for = 'fav-event';
@@ -531,7 +556,7 @@ class Manager{
 
         let submit = document.createElement('input');
         submit.id = 'submit-member';
-        submit.type = 'submit';
+        submit.type = 'button';
         submit.value = 'Adicionar';
 
         let cancel = document.createElement('input');
@@ -539,8 +564,7 @@ class Manager{
         cancel.type = 'reset';
         cancel.value = 'Cancelar';
 
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
+        submit.addEventListener('click', (event) => {
             this.addMember(input.value, this.typeOfEvents.elements.filter(event => 
                 selecteds.find(check => check.id === event.name).checked
             ));
@@ -555,60 +579,59 @@ class Manager{
      * Carrega a página de formulário de evento.
      */
     static loadEventFormPage(){
-        this.modifyText('Adicionar Evento');
+        this.modifyText('Adicionar novo Evento');
         this.clearDiv('lista-elementos');
         this.clearDiv('menu-opcoes');
 
         let formPlace = document.getElementById('lista-elementos');
         let form = document.createElement('form');
+        let typeLabel = document.createElement('label')
+        typeLabel.for = 'type-select';
+        typeLabel.textContent = 'Tipo do Evento: ';
 
-        let labelTypeOfEvent = document.createElement('label');
-        labelTypeOfEvent.for = 'event-type';
-        labelTypeOfEvent.textContent = 'Tipo de Evento: ';
-
-        let inputTypeOfEvent = document.createElement('select');
-        inputTypeOfEvent.id = 'event-type';
-
-        this.typeOfEvents.elements.some(n => {
+        let typeSelect = document.createElement('select');
+        typeSelect.id = 'type-select';
+        
+        this.typeOfEvents.elements.forEach(n => {
             let option = document.createElement('option');
             option.value = n.name;
             option.textContent = n.name;
-            inputTypeOfEvent.appendChild(option);
+            typeSelect.appendChild(option);
         });
-        
-        let labelName = document.createElement('label');
-        labelName.for = 'event-name';
-        labelName.textContent = 'Nome do evento: ';
 
-        let inputName = document.createElement('input');
-        inputName.type = 'text';
-        inputName.id = 'event-name';
+        let nameLabel = document.createElement('label');
+        nameLabel.for = 'name-input';
+        nameLabel.textContent = 'Nome do Evento: ';
 
-        let labelDate = document.createElement('label');
-        labelDate.for = 'event-date';
-        labelDate.textContent = 'Data do evento: ';
+        let nameInput = document.createElement('input');
+        nameInput.id = 'name-input';
+        nameInput.type = 'text';
 
-        let inputDate = document.createElement('input');
-        inputDate.type = 'date';
-        inputDate.id = 'event-date';
+        let dateLabel = document.createElement('label');
+        dateLabel.for = 'date-input';
+        dateLabel.textContent = 'Data do Evento: ';
+
+        let dateInput = document.createElement('input');
+        dateInput.id = 'date-input';
+        dateInput.type = 'date';
 
         let submit = document.createElement('input');
         submit.id = 'submit';
-        submit.type = 'submit';
+        submit.type = 'button';
         submit.value = 'Adicionar';
+        submit.addEventListener('click', (event) => {
+            let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
+            let date = new Date(dateInput.value);
+            this.addEvent(type, nameInput.value, date);
+        });
 
         let cancel = document.createElement('input');
         cancel.id = 'cancel';
         cancel.type = 'reset';
         cancel.value = 'Cancelar';
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            this.addEvent(inputName.value, inputTypeOfEvent.value, new Date(inputDate.value));
-        });
-
-        form.append(labelTypeOfEvent, inputTypeOfEvent, labelName, inputName, labelDate, inputDate, submit, cancel);
-
+        
+        form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, submit, cancel);
+        
         formPlace.appendChild(form);
     }
 
@@ -658,20 +681,18 @@ class Manager{
 
         let submit = document.createElement('input');
         submit.id = 'submit-eventType';
-        submit.type = 'submit';
+        submit.type = 'button';
         submit.value = 'Aplicar';
+        submit.addEventListener('click', (event) => {
+            eventType.name = input.value;
+            this.paginaTipoEventos();
+        });
     
         let back = document.createElement('input');
         back.id = 'back-eventType';
         back.type = 'button';
         back.value = 'Voltar';
         back.onclick = () => this.paginaTipoEventos();
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            eventType.name = inputName.value;
-            this.paginaTipoEventos();
-        });
 
         form.append(submit, back)
 
@@ -738,7 +759,7 @@ class Manager{
     
         let submit = document.createElement('input');
         submit.id = 'submit-member';
-        submit.type = 'submit';
+        submit.type = 'button';
         submit.value = 'Aplicar';
     
         let back = document.createElement('input');
@@ -747,7 +768,7 @@ class Manager{
         back.value = 'Voltar';
         back.onclick = () => this.paginaMembros();
     
-        form.addEventListener('submit', (event) => {
+        submit.addEventListener('click', (event) => {
             member.name = input.value;
             member.editFavoriteEvents(this.typeOfEvents.elements.filter(event => 
                 selecteds.find(check => check.id === event.name).checked
@@ -881,10 +902,10 @@ class Manager{
      * @param {string} type - O tipo de evento.
      * @param {Date} date - A data do evento.
      */
-    static addEvent(name, type, date){
+    static addEvent(type, name, date){
         try{
-            var evento = new EventManagement(type, name, date);
-            if(evento !== void 0) this.events.addElement(evento);
+            var event = new EventManagement(type, name, date);
+            if(event !== void 0) this.events.addElement(event);
             this.paginaEventos();
         }catch(error){
             this.showMessage(error.message);
@@ -897,5 +918,14 @@ class Manager{
      */
     static showMessage(message){
         alert(message);
+    }
+
+    static formatDate(date){
+        if(date instanceof Date){
+            let day = date.getDate().toString().padStart(2, '0');
+            let month = (date.getMonth()+1).toString().padStart(2, '0');
+            let year = date.getFullYear()
+            return `${day}/${month}/${year}` 
+        }
     }
 }
