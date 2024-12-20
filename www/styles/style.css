@@ -53,17 +53,17 @@ body{
     text-align: center;
 }
 
-#lista-elementos{
+#lista-elementos, #subscribed{
     display: flex;
     justify-content: center;
 }
 
-#lista-elementos > table > th{
+#lista-elementos > table > th, #subscribed > table > th{
     border: 5px solid white;
     padding: 5px;
 }
 
-#lista-elementos > table > tr{
+#lista-elementos > table > tr, #subscribed > table > tr{
     background-color: darkblue;
     color: aliceblue;
 }
@@ -106,14 +106,14 @@ input[type=button]#cancel:hover{
     background-color: rgb(124, 4, 0);
 }
 
-form {
+form{
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
 
-input[type="text"], input[type="date"], select {
+input[type="text"], input[type="date"], select{
     display: block;
     width: 100%;
     padding: 10px;
@@ -128,28 +128,28 @@ input[type="text"], input[type="date"], select {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-input[type="text"]:focus, input[type="date"]:focus, select:focus {
+input[type="text"]:focus, input[type="date"]:focus, select:focus{
     border-color: darkblue;
     box-shadow: 0 0 5px rgba(0, 0, 139, 0.5);
     outline: none;
 }
 
-input[type="date"]::placeholder {
+input[type="date"]::placeholder{
     color: #999;
 }
 
-input[type="date"]:hover {
+input[type="date"]:hover{
     border-color: darkblue;
 }
 
-label {
+label{
     display: flex;
     justify-content: center;
     font-family: 'Arial';
     font-size: 20px;
 }
 
-#error-message {
+#error-message{
     color: red;
     font-family: 'Arial';
     font-size: 20px;
