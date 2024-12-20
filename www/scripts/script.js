@@ -17,7 +17,7 @@ class Event{
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
     constructor(name){
-        if(!name && typeof name !== "string") throw new Error("O evento precisa ter um nome!");
+        if(!name || typeof name !== "string") throw new Error("O evento precisa ter um nome!");
         this.#name = name;
     }
 
@@ -34,7 +34,7 @@ class Event{
      * @param {string} newName - O novo nome do evento.
      */
     set name(newName){
-        if(!newName && typeof newName !== "string") throw new Error("O evento precisa ter um nome!");
+        if(!newName || typeof newName !== "string") throw new Error("O evento precisa ter um nome!");
         this.#name = newName;
     }
 }
@@ -107,7 +107,7 @@ class Member{
      * @param {string} name - O nome do membro.
      */
     constructor(name){
-        if(!name && typeof name !== "string") throw new Error('É preciso fornecer um nome ao membro!');
+        if(!name || typeof name !== "string") throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = name;
         this.#favoriteEvents = new ListOfElements();
     }
@@ -125,7 +125,7 @@ class Member{
      * @param {string} newName - O novo nome do membro.
      */
     set name(newName){
-        if(!newName && typeof newName !== "string") throw new Error('É preciso fornecer um nome ao membro!');
+        if(!newName || typeof newName !== "string") throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = newName;
     }
 
@@ -204,7 +204,7 @@ class EventManagement{
     constructor(type, name, date){
         if(!type instanceof Event) throw new Error('É preciso fornecer um Tipo de Evento válido!');
         this.#type = type;  
-        if(!name && typeof name !== "string") throw new Error('É preciso fornecer um nome ao Evento!'); 
+        if(!name || typeof name !== "string") throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
         if(!date instanceof Date && !isNaN(date.getTime()))  throw new Error('É preciso fornecer uma data válida!');
         this.#date = date;
@@ -241,7 +241,7 @@ class EventManagement{
      * 
      */
     set name(newName){
-        if(!newName && typeof newName !== "string") throw new Error('É preciso fornecer um nome ao Evento!');
+        if(!newName || typeof newName !== "string") throw new Error('É preciso fornecer um nome ao Evento!');
         this.#name = newName;
     }
 
@@ -311,6 +311,7 @@ class Manager{
     static paginaMembros(){
         let membros = this.members.elements;
         this.loadPage('Membros', membros, ['Id', 'Nome'], 'membros');
+        this.clearDiv('subscribed');
         this.selectedRow = null;
     }
     
@@ -320,6 +321,7 @@ class Manager{
     static paginaEventos(){
         let eventos = this.events.elements;
         this.loadPage('Eventos', eventos, ['Id', 'Nome', 'Tipo', 'Data'], 'eventos');
+        this.clearDiv('subscribed');
         this.selectedRow = null;
     }
     
@@ -329,6 +331,7 @@ class Manager{
     static paginaTipoEventos(){
         let tpEventos = this.typeOfEvents.elements; 
         this.loadPage('Tipos de Evento', tpEventos, ['Id', 'Nome'], 'tpeventos');
+        this.clearDiv('subscribed');
         this.selectedRow = null;
     }
 
@@ -361,9 +364,9 @@ class Manager{
      * @param {Array} arr - O array a ser convertido.
      * @param {Array} headers - Os cabeçalhos da tabela.
      */
-    static toTable(arr, headers){
-        this.clearDiv('lista-elementos');
-        let conteiner = document.getElementById('lista-elementos');
+    static toTable(arr, headers, div = 'lista-elementos'){
+        this.clearDiv(div);
+        let conteiner = document.getElementById(div);
         let table = document.createElement('table');
         let header = this.toHeader(headers);
         table.appendChild(header);
@@ -403,9 +406,6 @@ class Manager{
         }
 
         tr.addEventListener('click', (event) => {
-            const errorMessageElement = document.getElementById('error-message');
-            errorMessageElement.style.display = 'none';
-
             if (this.selectedRow) {
                 this.selectedRow.style.color = '';
                 this.selectedRow.style.backgroundColor = '';
@@ -788,10 +788,7 @@ class Manager{
         let buttonDiv = document.createElement('div');
         buttonDiv.className = 'button-container';
     
-        form.appendChild(label);
-        form.appendChild(input);
-        form.appendChild(label1);
-        form.appendChild(div);
+        form.append(label, input, label1, div);
     
         let selecteds = [];
     
@@ -815,6 +812,14 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
+
+        let subscribeBtn = document.createElement('input');
+        subscribeBtn.id = 'subscribe-btn';
+        subscribeBtn.type = 'button';
+        subscribeBtn.value = 'Inscrever-se em Evento';
+        subscribeBtn.addEventListener('click', (event) => 
+            this.loadSubscribePage(input.value)
+        );
     
         let back = document.createElement('input');
         back.id = 'cancel';
@@ -823,18 +828,58 @@ class Manager{
         back.onclick = () => this.paginaMembros();
     
         submit.addEventListener('click', (event) => {
-            member.name = input.value;
             member.editFavoriteEvents(this.typeOfEvents.elements.filter(event => 
                 selecteds.find(check => check.id === event.name).checked
             ));
             alert(`O Membro ${member.name} foi atualizado.`);
             this.paginaMembros();
         });
-        
         buttonDiv.append(submit, back);
         form.append(buttonDiv);
-    
+
+        let subscribedEvents = this.events.elements.filter(evento => evento.members.some(m => m.name === member.name));
+
+        this.toTable(
+            subscribedEvents,
+            ['Id', 'Name', 'Tipo', 'Data'],
+            'subscribed'
+        )
         formPlace.appendChild(form);
+    }
+
+    static loadSubscribePage(memberName){
+        this.modifyText('Inscrever-se em Evento');
+        this.clearDiv('menu-opcoes');
+        this.clearDiv('subscribed');
+
+        let member = this.members.elements.find(m => m.name === memberName);
+        let favEvents = this.events.elements.filter(evento => member.favoriteEvents.some(fvtEv => fvtEv.name === evento.type.name));
+
+        this.toTable(
+            favEvents,
+            ['Id', 'Nome', 'Tipo', 'Data']
+        );
+
+        let opcoes = document.getElementById('menu-opcoes');
+
+        let subscribe = document.createElement('input');
+        subscribe.id = 'subscribe-button';
+        subscribe.type = 'button';
+        subscribe.value = 'Inscrever-se';
+        subscribe.addEventListener('click', (event) => {
+            if(!this.selectedRow) this.showMessage('Nenhum evento selecionado');
+            try{
+                let name = this.selectedRow.children[1].textContent;
+                let element = this.events.elements.find(evento => evento.name === name);
+                member.subscribeEvent(element);
+                this.showMessage('Inscrição feita com sucesso.');
+                this.editMemberFormPage();
+            }catch(error){
+                this.showMessage(error.message);
+            }
+        })
+
+        opcoes.append(subscribe);
     }
     
     /**
@@ -962,7 +1007,6 @@ class Manager{
         if(this.selectedRow){
             let id = this.selectedRow.firstChild.textContent
             let element = this.typeOfEvents.elements[id - 1];
-            let errorMessage = document.getElementById('error-message');
 
             try {
                 if (this.members.elements.some(m => m.favoriteEvents.some(tpevent => tpevent.name === element.name))) {
@@ -975,14 +1019,13 @@ class Manager{
                 this.paginaTipoEventos();
                 this.selectedRow = null;
             } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
-            this.paginaTipoEventos();
-            this.selectedRow = null;
+                this.showMessage(error.message);
+                this.paginaTipoEventos();
+                this.selectedRow = null;
             }
         }
         else{
-            alert('Nenhum tipo de evento selecionado!');
+            this.showMessage('Nenhum tipo de evento selecionado!');
         }
     }
 
