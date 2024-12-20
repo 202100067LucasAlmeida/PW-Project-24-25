@@ -645,12 +645,12 @@ class Manager{
         let eventType = this.typeOfEvents.elements[eventTypeId - 1];
 
         let label = document.createElement('label');
-        label.for = 'Tipo de Evento';
+        label.for = 'event-type';
         label.textContent = 'Nome do Tipo de Evento: ';
 
         let input = document.createElement('input');
         input.type = 'text';
-        input.id = 'eventType';
+        input.id = 'event-type';
         input.value = eventType.name;
 
         form.appendChild(label);

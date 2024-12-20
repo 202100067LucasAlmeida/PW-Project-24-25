@@ -38,12 +38,11 @@ body{
     font-family: 'Arial';
 }
 
-.menu td:hover{
-    background-color: rgba(123, 202, 238, 0.849);
+.menu th:hover{
+    background-color: rgb(0, 0, 97)
 }
-
-.menu a:hover{
-    color: rgb(78, 78, 155);
+.menu th:hover a{
+    color : white;
 }
 
 #titulo-pagina{
@@ -90,40 +89,41 @@ body{
     display: flex;
     justify-content: center;
 }
-#menu-opcoes > button{
+button, input[type=reset], input[type=submit]{
     background-color: darkblue;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
 }
-#menu-opcoes > button:hover{
-    background-color: rgb(78, 78, 155);
+button:hover{
+    background-color: rgb(75, 75, 170);
 }
-#submit{
-    background-color: darkblue;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
+input[type=submit]:hover{
+    background-color: rgb(0, 124, 66);
 }
-#submit > button:hover{
-    background-color: rgb(78, 78, 155);
-}
-#cancel{
-    background-color: darkblue;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-#cancel > button:hover{
-    background-color: rgb(78, 78, 155);
+input[type=reset]:hover{
+    background-color: rgb(124, 4, 0);
 }
 
-#member{
+form{
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+input[type=text]{
     display: flex;
     background-color: rgba(186, 218, 233, 0.849);
     width: 100%;
     border-collapse: collapse;
     text-align: center;
+}
+
+label{
+    display: flex;
+    justify-content: center;
+    font-family: 'Arial';
+    font-size: 20;
 }
 
 
