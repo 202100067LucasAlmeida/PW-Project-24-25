@@ -1020,8 +1020,6 @@ class Manager{
                 this.selectedRow = null;
             } catch (error) {
                 this.showMessage(error.message);
-                this.paginaTipoEventos();
-                this.selectedRow = null;
             }
         }
         else{
@@ -1049,7 +1047,6 @@ class Manager{
         if(this.selectedRow){
             let id = this.selectedRow.firstChild.textContent
             let element = this.events.elements[id - 1];
-            let errorMessage = document.getElementById('error-message');
 
             try {
                 if (this.events.elements.some(e => e.members.some(m => m.name === element.name))) {
@@ -1060,8 +1057,7 @@ class Manager{
                 this.paginaEventos();
                 this.selectedRow = null;
             } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
+                this.showMessage(error.message);
             }
         }
         else{
