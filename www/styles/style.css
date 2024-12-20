@@ -1,18 +1,18 @@
-*,*::before,*::after{
+*, *::before, *::after{
     box-sizing: border-box; 
 }
 
 body{
     margin: 0;
     padding: 0;
-    min-height: calc(100vh - 2* 1rem);
+    min-height: calc(100vh - 2 * 1rem);
 }
 
 #titulo{
     background-color: darkblue;
     color: white;
     font-family: 'Arial';
-    font-size: 60;
+    font-size: 60px;
     margin: 0;
     padding: 0;
 }
@@ -39,24 +39,21 @@ body{
 }
 
 .menu th:hover{
-    background-color: rgb(0, 0, 97)
+    background-color: rgb(0, 0, 97);
 }
+
 .menu th:hover a{
-    color : white;
+    color: white;
 }
 
 #titulo-pagina{
     color: darkblue;
     font-family: 'Arial';
-    font-size: 40;
+    font-size: 40px;
     text-align: center;
 }
 
 #lista-elementos{
-    position: center;
-} 
-
-#lista-elementos {
     display: flex;
     justify-content: center;
 }
@@ -89,47 +86,72 @@ body{
     display: flex;
     justify-content: center;
 }
-button, input[type=reset], input[type=submit]{
+
+button, input[type=reset], input[type=submit], input[type=button]{
     background-color: darkblue;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
 button:hover{
     background-color: rgb(75, 75, 170);
 }
-input[type=submit]:hover{
+
+input[type=button]#submit:hover{
     background-color: rgb(0, 124, 66);
 }
-input[type=reset]:hover{
+
+input[type=button]#cancel:hover{
     background-color: rgb(124, 4, 0);
 }
 
-form{
+form {
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
 
-input[type=text]{
-    display: flex;
-    background-color: rgba(186, 218, 233, 0.849);
+input[type="text"], input[type="date"], select {
+    display: block;
     width: 100%;
-    border-collapse: collapse;
-    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: rgba(186, 218, 233, 0.849);
+    font-family: 'Arial';
+    font-size: 16px;
+    color: darkblue;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-label{
+input[type="text"]:focus, input[type="date"]:focus, select:focus {
+    border-color: darkblue;
+    box-shadow: 0 0 5px rgba(0, 0, 139, 0.5);
+    outline: none;
+}
+
+input[type="date"]::placeholder {
+    color: #999;
+}
+
+input[type="date"]:hover {
+    border-color: darkblue;
+}
+
+label {
     display: flex;
     justify-content: center;
     font-family: 'Arial';
-    font-size: 20;
+    font-size: 20px;
 }
 
-
-#error-message{
+#error-message {
     color: red;
     font-family: 'Arial';
-    font-size: 20;
+    font-size: 20px;
     text-align: center;
 }

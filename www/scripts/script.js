@@ -8,16 +8,12 @@
 class Event{
     /**
      * @property {string} #name - O nome do evento.
-     * @property {string} #typeOfEvent - O tipo de evento.
-     * @property {Date} #date - A data do evento.
      */
     #name;
 
     /**
      * Construtor da classe Evento.
      * @param {string} name - O nome do evento.
-     * @param {Event} typeOfEvent - O tipo de evento.
-     * @param {Date} date - A data do evento.
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
     constructor(name){
@@ -224,6 +220,15 @@ class EventManagement{
     }
 
     /**
+     * Define o tipo de evento.
+     * @param {Event} newType - O novo tipo de evento.
+     */
+    set type(newType) {
+        if (!(newType instanceof Event)) throw new Error('É preciso fornecer um Tipo de Evento válido!');
+        this.#type = newType;
+    }
+
+    /**
      * Retorna o nome do evento.
      * @returns {string} O nome do evento.
      */
@@ -263,7 +268,7 @@ class EventManagement{
      * @returns {Array} A lista de membros inscritos no evento.
      */
     get members(){
-        return this.#members.elements();
+        return this.#members.elements;
     }
     
     /**
@@ -440,14 +445,17 @@ class Manager{
 
         let addBtn = document.createElement('button');
         addBtn.textContent = 'Criar';
+        addBtn.id = 'add';
         addBtn.onclick = this.selectForm(text);
 
         let editBtn = document.createElement('button');
         editBtn.textContent = 'Editar';
+        editBtn.id = 'edit';
         editBtn.onclick = this.selectEditForm(text);
 
         let deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Remover';
+        deleteBtn.id = 'delete';
         deleteBtn.onclick = this.selectDeleteRow(text);
 
         menu.append(addBtn, editBtn, deleteBtn);
@@ -490,6 +498,9 @@ class Manager{
         input.type = 'text';
         input.id = 'event';
 
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
+
         let submit = document.createElement('input');
         submit.id = 'submit';
         submit.type = 'button';
@@ -501,10 +512,12 @@ class Manager{
 
         let cancel = document.createElement('input');
         cancel.id = 'cancel';
-        cancel.type = 'reset';
+        cancel.type = 'button';
         cancel.value = 'Cancelar';
+        cancel.onclick = () => this.paginaTipoEventos();
 
-        form.append(label, input, submit, cancel);
+        buttonDiv.append(submit, cancel);
+        form.append(label, input, buttonDiv);
 
         formPlace.appendChild(form);
     }
@@ -536,6 +549,9 @@ class Manager{
         let div = document.createElement('div');
         div.id = 'fav-event';
 
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
+
         form.append(label, input, label1, div);
 
         let selecteds = [];
@@ -555,22 +571,28 @@ class Manager{
         });
 
         let submit = document.createElement('input');
-        submit.id = 'submit-member';
+        submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Adicionar';
 
         let cancel = document.createElement('input');
-        cancel.id = 'cancel-member';
-        cancel.type = 'reset';
+        cancel.id = 'cancel';
+        cancel.type = 'button';
         cancel.value = 'Cancelar';
+        cancel.onclick = () => this.paginaMembros();
 
         submit.addEventListener('click', (event) => {
+            if(!input.value) {
+                alert('É preciso fornecer um nome ao membro!');
+                return;
+            }
             this.addMember(input.value, this.typeOfEvents.elements.filter(event => 
                 selecteds.find(check => check.id === event.name).checked
             ));
         });
 
-        form.append(submit, cancel);
+        buttonDiv.append(submit, cancel);
+        form.append(buttonDiv);
 
         formPlace.appendChild(form);
     }
@@ -591,6 +613,14 @@ class Manager{
 
         let typeSelect = document.createElement('select');
         typeSelect.id = 'type-select';
+
+        let placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Selecione um tipo de evento...';
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+
+        typeSelect.appendChild(placeholderOption);
         
         this.typeOfEvents.elements.forEach(n => {
             let option = document.createElement('option');
@@ -615,11 +645,26 @@ class Manager{
         dateInput.id = 'date-input';
         dateInput.type = 'date';
 
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
+
         let submit = document.createElement('input');
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Adicionar';
         submit.addEventListener('click', (event) => {
+            if(!typeSelect.value) {
+                alert('É preciso fornecer um tipo ao evento!');
+                return;
+            }
+            else if(!nameInput.value) {
+                alert('É preciso fornecer um nome ao evento!');
+                return;
+            }
+            else if(!dateInput.value) {
+                alert('É preciso fornecer uma data ao evento!');
+                return;
+            }
             let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
             let date = new Date(dateInput.value);
             this.addEvent(type, nameInput.value, date);
@@ -627,10 +672,12 @@ class Manager{
 
         let cancel = document.createElement('input');
         cancel.id = 'cancel';
-        cancel.type = 'reset';
+        cancel.type = 'button';
         cancel.value = 'Cancelar';
-        
-        form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, submit, cancel);
+        cancel.onclick = () => this.paginaEventos();
+
+        buttonDiv.append(submit, cancel);
+        form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, buttonDiv);
         
         formPlace.appendChild(form);
     }
@@ -676,11 +723,14 @@ class Manager{
         input.id = 'event-type';
         input.value = eventType.name;
 
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
+
         form.appendChild(label);
         form.appendChild(input);
 
         let submit = document.createElement('input');
-        submit.id = 'submit-eventType';
+        submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
         submit.addEventListener('click', (event) => {
@@ -689,12 +739,13 @@ class Manager{
         });
     
         let back = document.createElement('input');
-        back.id = 'back-eventType';
+        back.id = 'cancel';
         back.type = 'button';
         back.value = 'Voltar';
         back.onclick = () => this.paginaTipoEventos();
 
-        form.append(submit, back)
+        buttonDiv.append(submit, back);
+        form.append(buttonDiv)
 
         formPlace.appendChild(form);
     }
@@ -733,6 +784,9 @@ class Manager{
     
         let div = document.createElement('div');
         div.id = 'fav-event';
+
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
     
         form.appendChild(label);
         form.appendChild(input);
@@ -758,12 +812,12 @@ class Manager{
         });
     
         let submit = document.createElement('input');
-        submit.id = 'submit-member';
+        submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
     
         let back = document.createElement('input');
-        back.id = 'back-member';
+        back.id = 'cancel';
         back.type = 'button';
         back.value = 'Voltar';
         back.onclick = () => this.paginaMembros();
@@ -776,9 +830,9 @@ class Manager{
             alert(`O Membro ${member.name} foi atualizado.`);
             this.paginaMembros();
         });
-    
-        form.appendChild(submit);
-        form.appendChild(back);
+        
+        buttonDiv.append(submit, back);
+        form.append(buttonDiv);
     
         formPlace.appendChild(form);
     }
@@ -786,8 +840,99 @@ class Manager{
     /**
      * Edita a página de formulário de evento.
      */
-    static editEventFormPage(){
-        alert('Eventos!');
+    static editEventFormPage() {
+        if (!this.selectedRow) {
+            alert('Nenhum evento selecionado!');
+            return;
+        }
+    
+        this.modifyText('Editar Evento');
+        this.clearDiv('lista-elementos');
+        this.clearDiv('menu-opcoes');
+    
+        let formPlace = document.getElementById('lista-elementos');
+        let form = document.createElement('form');
+    
+        let eventId = this.selectedRow.children[0].textContent;
+        let event = this.events.elements[eventId - 1];
+    
+        let typeLabel = document.createElement('label');
+        typeLabel.htmlFor = 'type-select';
+        typeLabel.textContent = 'Tipo do Evento: ';
+    
+        let typeSelect = document.createElement('select');
+        typeSelect.id = 'type-select';
+    
+        let placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Selecione um tipo de evento...';
+        placeholderOption.disabled = true;
+    
+        typeSelect.appendChild(placeholderOption);
+    
+        this.typeOfEvents.elements.forEach(n => {
+            let option = document.createElement('option');
+            option.value = n.name;
+            option.textContent = n.name;
+            if (n.name === event.type.name) {
+                option.selected = true;
+            }
+            typeSelect.appendChild(option);
+        });
+    
+        let nameLabel = document.createElement('label');
+        nameLabel.htmlFor = 'name-input';
+        nameLabel.textContent = 'Nome do Evento: ';
+    
+        let nameInput = document.createElement('input');
+        nameInput.id = 'name-input';
+        nameInput.type = 'text';
+        nameInput.value = event.name;
+    
+        let dateLabel = document.createElement('label');
+        dateLabel.htmlFor = 'date-input';
+        dateLabel.textContent = 'Data do Evento: ';
+    
+        let dateInput = document.createElement('input');
+        dateInput.id = 'date-input';
+        dateInput.type = 'date';
+        dateInput.value = event.date.toISOString().split('T')[0]; // Format date to YYYY-MM-DD
+    
+        let buttonDiv = document.createElement('div');
+        buttonDiv.className = 'button-container';
+    
+        let submit = document.createElement('input');
+        submit.id = 'submit';
+        submit.type = 'button';
+        submit.value = 'Aplicar';
+        submit.addEventListener('click', () => {
+            if (!typeSelect.value) {
+                alert('É preciso fornecer um tipo ao evento!');
+                return;
+            } else if (!nameInput.value) {
+                alert('É preciso fornecer um nome ao evento!');
+                return;
+            } else if (!dateInput.value) {
+                alert('É preciso fornecer uma data ao evento!');
+                return;
+            }
+            let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
+            let date = new Date(dateInput.value);
+            event.type = type;
+            event.name = nameInput.value;
+            event.date = date;
+            this.paginaEventos();
+        });
+    
+        let cancel = document.createElement('input');
+        cancel.id = 'cancel';
+        cancel.type = 'button';
+        cancel.value = 'Cancelar';
+        cancel.onclick = () => this.paginaEventos();
+    
+        buttonDiv.append(submit, cancel);
+        form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, buttonDiv);
+        formPlace.appendChild(form);
     }
 
     /**
@@ -802,7 +947,7 @@ class Manager{
             case 'membros':
                 return this.deleteMember.bind(this);
             case 'eventos':
-                //return this.deleteEvent.bind(this);
+                return this.deleteEvent.bind(this);
             default:
                 return void 0;
         }
@@ -854,6 +999,30 @@ class Manager{
         }
         else{
             alert('Nenhum membro selecionado!');
+        }
+    }
+
+    static deleteEvent(){
+        if(this.selectedRow){
+            let id = this.selectedRow.firstChild.textContent
+            let element = this.events.elements[id - 1];
+            let errorMessage = document.getElementById('error-message');
+
+            try {
+                if (this.events.elements.some(e => e.members.some(m => m.name === element.name))) {
+                    throw new Error("Não pode apagar um evento que um membro esteja inscrito!");
+                } else {
+                    this.events.removeElement(element);
+                }
+                this.paginaEventos();
+                this.selectedRow = null;
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            }
+        }
+        else{
+            alert('Nenhum evento selecionado!');
         }
     }
 
@@ -920,6 +1089,11 @@ class Manager{
         alert(message);
     }
 
+    /**
+     * Formata uma data.
+     * @param {Date} date - A data a ser formatada.
+     * @returns {string} A data formatada.
+     */
     static formatDate(date){
         if(date instanceof Date){
             let day = date.getDate().toString().padStart(2, '0');
