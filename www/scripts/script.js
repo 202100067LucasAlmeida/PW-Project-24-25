@@ -820,6 +820,14 @@ class Manager{
         subscribeBtn.addEventListener('click', (event) => 
             this.loadSubscribePage(input.value)
         );
+
+        let unsubscribeBtn = document.createElement('input');
+        unsubscribeBtn.id = 'unsubscribe-btn';
+        unsubscribeBtn.type = 'button';
+        unsubscribeBtn.value = 'Desinscrever-se em Evento';
+        unsubscribeBtn.addEventListener('click', (event) => 
+            this.unsubscribeEvnt(input.value)
+        );
     
         let back = document.createElement('input');
         back.id = 'cancel';
@@ -834,8 +842,14 @@ class Manager{
             alert(`O Membro ${member.name} foi atualizado.`);
             this.paginaMembros();
         });
-        buttonDiv.append(submit, back);
+        buttonDiv.append(submit, subscribeBtn, unsubscribeBtn, back);
         form.append(buttonDiv);
+
+        let subscribeLabel = document.createElement('label');
+        subscribeLabel.for = 'subscribed';
+        subscribeLabel.textContent = 'Eventos Inscritos: ';
+
+        form.appendChild(subscribeLabel);
 
         let subscribedEvents = this.events.elements.filter(evento => evento.members.some(m => m.name === member.name));
 
@@ -844,6 +858,8 @@ class Manager{
             ['Id', 'Name', 'Tipo', 'Data'],
             'subscribed'
         )
+
+
         formPlace.appendChild(form);
     }
 
@@ -880,6 +896,20 @@ class Manager{
         })
 
         opcoes.append(subscribe);
+    }
+
+    static unsubscribeEvnt(memberName){
+        let member = this.members.elements.find(m => m.name === memberName);
+        if(!this.selectedRow) this.showMessage('Nenhum Evento selecionado');
+        try{
+            let name = this.selectedRow.children[1].textContent;
+            let event = this.events.elements.find(evento => evento.name === name);
+            member.unsubscribeEvent(event);
+            this.showMessage('Inscrição cancelada');
+            this.editMemberFormPage();
+        }catch(error){
+            this.showMessage(error.message);
+        }
     }
     
     /**
@@ -950,15 +980,15 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
-        submit.addEventListener('click', () => {
+        submit.addEventListener('click', (event) => {
             if (!typeSelect.value) {
-                alert('É preciso fornecer um tipo ao evento!');
+                this.showMessage('É preciso fornecer um tipo ao evento!');
                 return;
             } else if (!nameInput.value) {
-                alert('É preciso fornecer um nome ao evento!');
+                this.showMessage('É preciso fornecer um nome ao evento!');
                 return;
             } else if (!dateInput.value) {
-                alert('É preciso fornecer uma data ao evento!');
+                this.showMessage('É preciso fornecer uma data ao evento!');
                 return;
             }
             let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
