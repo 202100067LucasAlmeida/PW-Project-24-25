@@ -4,11 +4,8 @@
   "description": "gerenciador de eventos de bicicletas",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/202100067LucasAlmeida/PW-Project-24-25.git"
   },
   "keywords": [
     "MySQL"
@@ -16,12 +13,8 @@
   "author": "Jean e Lucas",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "mysql2": "^2.3.3",
-    "body-parser": "^1.19.0"
-  },
-  "bugs": {
-    "url": "https://github.com/202100067LucasAlmeida/PW-Project-24-25/issues"
-  },
-  "homepage": "https://github.com/202100067LucasAlmeida/PW-Project-24-25#readme"
+    "mysql2": "^3.12.0"
+  }
 }

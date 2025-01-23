@@ -316,6 +316,21 @@ class Manager{
     }
     
     /**
+     * Carrega os membros existentes no banco de dados.
+     */
+    static async fetchMembers(){
+        let response = await fetch('http://localhost:3000/members');
+        let memberJson = await response.json();
+        this.members = new ListOfElements();
+        memberJson.forEach(m => {
+            let member = new Member(m.name);
+            member.addFavoriteEvents(m.favoriteEvents);
+            this.members.addElement(member);
+        });
+        paginaMembros();
+    }
+    
+    /**
      * Carrega a página de eventos.
      */
     static paginaEventos(){
@@ -323,6 +338,22 @@ class Manager{
         this.loadPage('Eventos', eventos, ['Id', 'Nome', 'Tipo', 'Data'], 'eventos');
         this.clearDiv('subscribed');
         this.selectedRow = null;
+    }
+
+    /**
+     * Carrega os eventos existentes no banco de dados.
+     */
+    static async fetchEvents(){
+        let response = await fetch('http://localhost:3000/events');
+        let eventsJson = await response.json();
+        this.events = new ListOfElements();
+        eventsJson.forEach(e => {
+            let event = new Event(e.name);
+            event.type = this.typeOfEvents.elements.find(tp => tp.name === e.type);
+            event.date = new Date(e.date);
+            this.events.addElement(event);
+        });
+        paginaEventos();
     }
     
     /**
@@ -333,6 +364,20 @@ class Manager{
         this.loadPage('Tipos de Evento', tpEventos, ['Id', 'Nome'], 'tpeventos');
         this.clearDiv('subscribed');
         this.selectedRow = null;
+    }
+
+    /**
+     * Carrega os tipos de eventos existentes no banco de dados.
+     */
+    static async fetchTypeOfEvents(){
+        let response = await fetch('http://localhost:3000/event-types');
+        let typeOfEventsJson = await response.json();
+        this.typeOfEvents = new ListOfElements();
+        typeOfEventsJson.forEach(tp => {
+            let type = new Event(tp.name);
+            this.typeOfEvents.addElement(type);
+        });
+        paginaTipoEventos();
     }
 
     /**

@@ -15,7 +15,9 @@ drop table if exists Event;
 create table Event(
 	eventId int auto_increment primary key,
     eventDate date not null,
-    eventName varchar(255) not null
+    eventName varchar(255) not null,
+    eventTypeId int not null,
+    foreign key (eventTypeId) references EventType(eventTypeId)
 );
 
 drop table if exists EventType;
@@ -24,17 +26,18 @@ create table EventType(
     eventTypeName varchar(255) not null
 );
 
+
 create table MemberEventType(
-	memberId int,
-    eventTypeId int,
+	memberId int not null,
+    eventTypeId int not null,
     primary key (memberId, eventTypeId),
     foreign key (memberId) references Member(memberId),
     foreign key (eventTypeId) references EventType(eventTypeId)
 );
 
 create table MemberEvent(
-	memberId int,
-    eventId int,
+	memberId int not null,
+    eventId int not null,
     primary key (memberId, eventId),
     foreign key (memberId) references Member(memberId),
     foreign key (eventId) references Event(eventId)
