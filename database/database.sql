@@ -1,7 +1,9 @@
 create database pw2025 /*!40100 COLLATE 'utf8mb4_0900_ai_ci' */;
 
-create user if not exists pw2025projeto identified by 'PW2025Projeto!GandaSenha';
-grant all on pw2025.* to pw2025projeto;
+drop user if exists 'pw2025projeto'@'localhost';
+create user if not exists 'pw2025projeto'@'localhost' identified by 'PW2025Projeto!GandaSenha';
+grant all on pw2025.* to 'pw2025projeto';
+FLUSH PRIVILEGES;
 
 use pw2025;
 
@@ -11,6 +13,12 @@ create table Member(
     memberName varchar(255) not null
 );
 
+drop table if exists EventType;
+create table EventType(
+	eventTypeId int auto_increment primary key,
+    eventTypeName varchar(255) not null
+);
+
 drop table if exists Event;
 create table Event(
 	eventId int auto_increment primary key,
@@ -18,12 +26,6 @@ create table Event(
     eventName varchar(255) not null,
     eventTypeId int not null,
     foreign key (eventTypeId) references EventType(eventTypeId)
-);
-
-drop table if exists EventType;
-create table EventType(
-	eventTypeId int auto_increment primary key,
-    eventTypeName varchar(255) not null
 );
 
 

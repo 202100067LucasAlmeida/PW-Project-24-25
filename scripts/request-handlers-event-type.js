@@ -17,12 +17,12 @@ async function execute(response, sqlCommand, values) {
 
 async function createEventType(request, response) {
     let sqlCommand = "INSERT INTO EventType (eventTypeName) VALUES (?)";
-    let eventTypeName = request.body.name;
-    let rows = await execute(response, sqlCommand, eventTypeName);
+    let eventTypeName = request.body.eventTypeName;
+    let rows = await execute(response, sqlCommand, [eventTypeName]);
     response.send(rows);
 }
 
-async function getAllEventTypes(response) {
+async function getAllEventTypes(request, response) {
     let sqlCommand = "SELECT * FROM EventType";
     let rows = await execute(response, sqlCommand);
     response.send(rows);
@@ -30,7 +30,7 @@ async function getAllEventTypes(response) {
 
 async function updateEventType(request, response) {
     let sqlCommand = "UPDATE EventType SET eventTypeName = ? WHERE id = ?";
-    let eventTypeName = request.body.name;
+    let eventTypeName = request.body.eventTypeName;
     let id = request.body.id;
     let rows = await execute(response, sqlCommand, [eventTypeName, id]);
     response.send(rows);

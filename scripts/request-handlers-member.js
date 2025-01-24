@@ -17,8 +17,8 @@ async function execute(response, sqlCommand, values) {
 
 async function createMember(request, response) {
     let sqlCommand = "INSERT INTO Member (memberName) VALUES (?)";
-    let memberName = request.body.name;
-    let rows = await execute(response, sqlCommand, memberName);
+    let memberName = request.body.memberName;
+    let rows = await execute(response, sqlCommand, [memberName]);
     response.send(rows);
 }
 

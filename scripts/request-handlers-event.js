@@ -16,15 +16,16 @@ async function execute(response, sqlCommand, values) {
 }
 
 async function createEvent(request, response) {
-    let sqlCommand = "INSERT INTO Event (eventName, eventDate, eventTypeId) VALUES (?, ?, ?)";
-    let eventName = request.body.name;
-    let eventDate = request.body.date;
+    let sqlCommand = "INSERT INTO Event (eventDate, eventName, eventTypeId) VALUES (?, ?, ?)";
+    let eventName = request.body.eventName;
+    let eventDate = request.body.eventDate.split("T")[0];
     let eventTypeId = request.body.eventTypeId;
-    let rows = await execute(response, sqlCommand, [eventName, eventDate, eventTypeId]);
+    console.log([eventName, eventDate, eventTypeId]);
+    let rows = await execute(response, sqlCommand, [eventDate, eventName, eventTypeId]);
     response.send(rows);
 }
 
-async function getAllEvents(response) {
+async function getAllEvents(request, response) {
     let sqlCommand = "SELECT * FROM Event";
     let rows = await execute(response, sqlCommand);
     response.send(rows);

@@ -323,11 +323,10 @@ class Manager{
         let memberJson = await response.json();
         this.members = new ListOfElements();
         memberJson.forEach(m => {
-            let member = new Member(m.name);
-            member.addFavoriteEvents(m.favoriteEvents);
+            let member = new Member(m.memberName);
+            (m.favoriteEvents === undefined) ? m.favoriteEvents = [] : member.addFavoriteEvents(m.favoriteEvents);
             this.members.addElement(member);
         });
-        paginaMembros();
     }
     
     /**
@@ -348,12 +347,12 @@ class Manager{
         let eventsJson = await response.json();
         this.events = new ListOfElements();
         eventsJson.forEach(e => {
-            let event = new Event(e.name);
-            event.type = this.typeOfEvents.elements.find(tp => tp.name === e.type);
-            event.date = new Date(e.date);
+            let type = this.typeOfEvents.elements[e.eventTypeId - 1];
+            let date = new Date(e.eventDate);
+            let event = new EventManagement(type, e.eventName, date);
+            console.log(event);
             this.events.addElement(event);
         });
-        paginaEventos();
     }
     
     /**
@@ -374,10 +373,9 @@ class Manager{
         let typeOfEventsJson = await response.json();
         this.typeOfEvents = new ListOfElements();
         typeOfEventsJson.forEach(tp => {
-            let type = new Event(tp.name);
+            let type = new Event(tp.eventTypeName);
             this.typeOfEvents.addElement(type);
         });
-        paginaTipoEventos();
     }
 
     /**
@@ -550,9 +548,10 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Adicionar';
-        submit.addEventListener('click', (event) =>
-            this.addTypeOfEvent(input.value)
-        );
+        submit.addEventListener('click', (event) => {
+            event.preventDefault();
+            this.addTypeOfEvent(input.value);
+        });
 
 
         let cancel = document.createElement('input');
@@ -566,6 +565,27 @@ class Manager{
 
         formPlace.appendChild(form);
     }
+
+    static async addTypeOfEvent(eventTypeName){
+        try {
+            let response = await fetch('http://localhost:3000/event-types', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ eventTypeName: eventTypeName })
+            });
+            if(response.ok){
+                this.fetchTypeOfEvents();
+                this.paginaTipoEventos();
+            } else {
+                console.error('Failed to add event type:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding event type:', error);
+        }
+    }
+
 
     /**
      * Carrega a página de formulário de membro.
@@ -642,6 +662,26 @@ class Manager{
         formPlace.appendChild(form);
     }
 
+    static async addMember(memberName){
+        try {
+            let response = await fetch('http://localhost:3000/members', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ memberName: memberName })
+            });
+            if(response.ok){
+                this.fetchMembers();
+                this.paginaMembros();
+            } else {
+                console.error('Failed to add member:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding member:', error);
+        }
+    }
+
     /**
      * Carrega a página de formulário de evento.
      */
@@ -710,9 +750,9 @@ class Manager{
                 alert('É preciso fornecer uma data ao evento!');
                 return;
             }
-            let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
+            let type = this.typeOfEvents.elements.findIndex(tp => tp.name === typeSelect.value);
             let date = new Date(dateInput.value);
-            this.addEvent(type, nameInput.value, date);
+            this.addEvent(nameInput.value, date, type);
         });
 
         let cancel = document.createElement('input');
@@ -725,6 +765,26 @@ class Manager{
         form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, buttonDiv);
         
         formPlace.appendChild(form);
+    }
+
+    static async addEvent(eventName, eventDate, eventTypeId){
+        try {
+            let response = await fetch('http://localhost:3000/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ eventName: eventName, eventDate: eventDate, eventTypeId: eventTypeId})
+            });
+            if(response.ok){
+                this.fetchEvents();
+                this.paginaEventos();
+            } else {
+                console.error('Failed to add event:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding event:', error);
+        }
     }
 
     /**
@@ -1147,52 +1207,6 @@ class Manager{
     static clearDiv(id){
         let div = document.getElementById(id);
         div.replaceChildren();
-    }
-
-    /**
-     * Adiciona um tipo de evento.
-     * @param {string} name - O nome do tipo de evento.
-     */
-    static addTypeOfEvent(name){
-        try {
-            var evento = new Event(name);
-            if(evento !== void 0) this.typeOfEvents.addElement(evento);
-            this.paginaTipoEventos();
-        }catch(error){
-            this.showMessage(error.message);
-        }
-    }
-
-    /**
-     * Adiciona um membro.
-     * @param {string} name - O nome do membro.
-     * @param {Array} arr - A lista de eventos favoritos do membro.
-     */
-    static addMember(name, arr){
-        try{
-            var membro = new Member(name);
-            if(membro !== void 0) this.members.addElement(membro);
-            membro.addFavoriteEvents(arr);
-            this.paginaMembros();
-        }catch(error){
-            this.showMessage(error.message);
-        }
-    }
-
-    /**
-     * Adiciona um evento.
-     * @param {string} name - O nome do evento.
-     * @param {string} type - O tipo de evento.
-     * @param {Date} date - A data do evento.
-     */
-    static addEvent(type, name, date){
-        try{
-            var event = new EventManagement(type, name, date);
-            if(event !== void 0) this.events.addElement(event);
-            this.paginaEventos();
-        }catch(error){
-            this.showMessage(error.message);
-        }
     }
 
     /**
