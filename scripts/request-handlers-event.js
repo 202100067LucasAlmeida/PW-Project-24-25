@@ -32,18 +32,19 @@ async function getAllEvents(request, response) {
 
 async function updateEvent(request, response) {
     let sqlCommand = "UPDATE Event SET eventName = ?, eventDate = ?, eventTypeId = ? WHERE eventId = ?";
-    let eventName = request.body.name;
-    let eventDate = request.body.date;
+    let eventName = request.body.eventName;
+    let eventDate = request.body.eventDate.split("T")[0];
     let eventTypeId = request.body.eventTypeId;
-    let id = request.body.id;
+    let id = request.params.id;
+    console.log(request.body);
     let rows = await execute(response, sqlCommand, [eventName, eventDate, eventTypeId, id]);
     response.send(rows);
 }
 
 async function deleteEvent(request, response) {
     let sqlCommand = "DELETE FROM Event WHERE eventId = ?";
-    let id = request.body.id;
-    let rows = await execute(response, sqlCommand, id);
+    let id = request.params.id;
+    let rows = await execute(response, sqlCommand, [id]);
     response.send(rows);
 }
 

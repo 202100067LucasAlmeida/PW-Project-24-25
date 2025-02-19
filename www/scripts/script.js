@@ -8,17 +8,28 @@
 class Event{
     /**
      * @property {string} #name - O nome do evento.
+     * @property {number} #id - O id do evento.
      */
     #name;
+    #id;
 
     /**
      * Construtor da classe Evento.
      * @param {string} name - O nome do evento.
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
-    constructor(name){
+    constructor(id, name){
         if(!name || typeof name !== "string") throw new Error("O evento precisa ter um nome!");
         this.#name = name;
+        this.#id = id;
+    }
+
+    /**
+     * Retorna o id do evento.
+     * @returns {number} O id do evento.
+     */
+    get id() {
+        return this.#id;
     }
 
     /**
@@ -77,13 +88,22 @@ class ListOfElements{
 
     /**
      * Remove um elemento da lista.
-     * @param {Object} element - O elemento a ser removido.
+     * @param {number} id - O id do elemento a ser removido.
      * @returns {ListOfElements} A lista de elementos.
      */
-    removeElement(element){
-        let position = this.#elements.indexOf(element);
-        ~position && this.#elements.splice(position, 1);
+    removeElementById(id){
+        this.#elements = this.#elements.filter(element => element.id !== id);
         return this;
+    }
+
+    /**
+     * Encontra um elemento na lista.
+     * @param {number} id - O id do elemento a ser encontrado.
+     * @returns {Object} O elemento encontrado.
+     */
+    findElementById(id) {
+        id = Number(id);
+        return this.#elements.find(element => element.id === id);
     }
 }
 
@@ -96,18 +116,29 @@ class Member{
     /**
      * @property {string} #name - O nome do membro.
      * @property {ListOfElements} #favoriteEvents - A lista de eventos favoritos do membro.
+     * @property {number} #id - O id do membro.
      */
     #name;
     #favoriteEvents;
+    #id;
 
     /**
      * Construtor da classe Membro.
      * @param {string} name - O nome do membro.
      */
-    constructor(name){
+    constructor(id, name){
         if(!name || typeof name !== "string") throw new Error('É preciso fornecer um nome ao membro!');
         this.#name = name;
         this.#favoriteEvents = new ListOfElements();
+        this.#id = id;
+    }
+
+    /**
+     * Retorna o id do membro.
+     * @returns {number} O id do membro.
+     */ 
+    get id() {
+        return this.#id;
     }
 
     /**
@@ -187,6 +218,7 @@ class EventManagement{
      * @property {Date} #date - A data do evento.
      * @property {ListOfElements} #members - A lista de membros inscritos no evento.
      */
+    #id;
     #type;
     #name;
     #date;
@@ -199,14 +231,23 @@ class EventManagement{
      * @param {Date} date - A data do evento.
      * @throws Erro se os parametros não estiverem de acordo com os requisitos.
      */
-    constructor(type, name, date){
+    constructor(id, type, name, date){
         if(!type instanceof Event) throw new Error('É preciso fornecer um Tipo de Evento válido!');
         this.#type = type;  
         if(!name || typeof name !== "string") throw new Error('É preciso fornecer um nome ao Evento!'); 
         this.#name = name;
         if(!date instanceof Date && !isNaN(date.getTime()))  throw new Error('É preciso fornecer uma data válida!');
         this.#date = date;
+        this.#id = id;
         this.#members = new ListOfElements();
+    }
+
+    /**
+     * Retorna o id do evento.
+     * @returns {number} O id do membro.
+     */ 
+    get id() {
+        return this.#id;
     }
 
     /**
@@ -282,7 +323,7 @@ class EventManagement{
      * @param {Member} member - O membro a ser desinscrito.
      */
     unsubscribe(member){
-        if(member instanceof Member) this.#members.removeElement(member);
+        if(member instanceof Member) this.#members.removeElementById(member);
     }
 }
 
@@ -321,7 +362,7 @@ class Manager{
         let memberJson = await response.json();
         this.members = new ListOfElements();
         memberJson.forEach(m => {
-            let member = new Member(m.memberName);
+            let member = new Member(m.memberId, m.memberName);
             this.members.addElement(member);
         });
     }
@@ -344,10 +385,9 @@ class Manager{
         let eventsJson = await response.json();
         this.events = new ListOfElements();
         eventsJson.forEach(e => {
-            let type = this.typeOfEvents.elements[e.eventTypeId - 1];
+            let type = this.typeOfEvents.findElementById(e.eventTypeId);
             let date = new Date(e.eventDate);
-            let event = new EventManagement(type, e.eventName, date);
-            console.log(event);
+            let event = new EventManagement(e.eventId, type, e.eventName, date);
             this.events.addElement(event);
         });
     }
@@ -370,7 +410,7 @@ class Manager{
         let typeOfEventsJson = await response.json();
         this.typeOfEvents = new ListOfElements();
         typeOfEventsJson.forEach(tp => {
-            let type = new Event(tp.eventTypeName);
+            let type = new Event(tp.eventTypeId, tp.eventTypeName);
             this.typeOfEvents.addElement(type);
         });
     }
@@ -379,14 +419,16 @@ class Manager{
      * carrega os eventos inscritos por um membro.
      * @param {String} memberName 
      */
-    static async fetchSubscribedEvents(memberName){
-        let response = await fetch(`http://localhost:3000/members/${memberName}/subscribedEvents`);
+    static async fetchSubscribedEvents(memberId) {
+        let response = await fetch(`http://localhost:3000/members/${memberId}/subscribedEvents`);
         let subscribedEvents = await response.json();
-        let member = this.members.elements.find(mb => mb.name === memberName);
+        let member = this.members.findElementById(memberId);
         subscribedEvents.forEach(sbe => {
-            let event = this.events.elements.find(ev => ev.name === sbe.eventName);
-            event.subscribe(this.members.elements.find(mb => mb.name === memberName));
-            member.subscribeEvent(event);
+            let event = this.events.elements.find(ev => ev.id === sbe.eventId);
+            if (event) {
+                event.subscribe(member);
+                member.subscribeEvent(event);
+            }
         });
     }
 
@@ -394,14 +436,15 @@ class Manager{
      * carrega os tipos de eventos favoritos dos membros.
      * @param {String} memberName 
      */
-    static async fetchFavoriteTypeEvents(memberName){
-        
-        let response = await fetch(`http://localhost:3000/members/${memberName}/favoriteEventTypes`);
+    static async fetchFavoriteTypeEvents(memberId) {
+        let response = await fetch(`http://localhost:3000/members/${memberId}/favoriteEventTypes`);
         let favoriteTypeEvents = await response.json();
-        let member = this.members.elements.find(mb => mb.name === memberName);
+        let member = this.members.findElementById(memberId);
         favoriteTypeEvents.forEach(fte => {
-            let eventType = this.typeOfEvents.elements.find(tp => tp.name === fte.eventTypeName);
-            member.addFavoriteEvents(eventType);
+            let eventType = this.typeOfEvents.elements.find(tp => tp.id === fte.eventTypeId);
+            if (eventType) {
+                member.addFavoriteEvents([eventType]);
+            }
         });
     }
 
@@ -444,8 +487,8 @@ class Manager{
             arr.forEach((element, i) => {
                 let row = null;
                 (element instanceof EventManagement) ? 
-                row = this.toRow({name: element.name, id: i+1, type: element.type.name, date: element.date}) :
-                row = this.toRow({name: element.name, id: i+1});
+                row = this.toRow({name: element.name, id: element.id, type: element.type.name, date: element.date}) :
+                row = this.toRow({name: element.name, id: element.id});
                 table.appendChild(row);
             });
         }
@@ -604,7 +647,7 @@ class Manager{
                 body: JSON.stringify({ eventTypeName: eventTypeName })
             });
             if(response.ok){
-                this.fetchTypeOfEvents();
+                await this.fetchTypeOfEvents();
             } else {
                 console.error('Failed to add event type:', response.statusText);
             }
@@ -700,7 +743,7 @@ class Manager{
                 body: JSON.stringify({ memberName: memberName })
             });
             if(response.ok){
-                this.fetchMembers();
+                await this.fetchMembers();
             } else {
                 console.error('Failed to add member:', response.statusText);
             }
@@ -777,9 +820,9 @@ class Manager{
                 alert('É preciso fornecer uma data ao evento!');
                 return;
             }
-            let type = this.typeOfEvents.elements.findIndex(tp => tp.name === typeSelect.value);
+            let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
             let date = new Date(dateInput.value);
-            await this.addEvent(nameInput.value, date, type);
+            await this.addEvent(nameInput.value, date, type.id);
             this.paginaEventos();
         });
 
@@ -805,7 +848,7 @@ class Manager{
                 body: JSON.stringify({ eventName: eventName, eventDate: eventDate, eventTypeId: eventTypeId})
             });
             if(response.ok){
-                this.fetchEvents();
+                await this.fetchEvents();
             } else {
                 console.error('Failed to add event:', response.statusText);
             }
@@ -843,8 +886,8 @@ class Manager{
         let formPlace = document.getElementById('lista-elementos');
         let form = document.createElement('form');
 
-        let eventTypeId = this.selectedRow.children[0].textContent;
-        let eventType = this.typeOfEvents.elements[eventTypeId - 1];
+        let eventTypeId = this.selectedRow.firstChild.textContent;
+        let eventType = this.typeOfEvents.findElementById(eventTypeId);
 
         let label = document.createElement('label');
         label.for = 'event-type';
@@ -866,8 +909,8 @@ class Manager{
         submit.type = 'button';
         submit.value = 'Aplicar';
         submit.addEventListener('click', (event) => {
-            eventType.name = input.value;
-            this.paginaTipoEventos();
+            let newTypeEventName = input.value;
+            this.paginaTipoEventos(newTypeEventName, eventTypeId);
         });
     
         let back = document.createElement('input');
@@ -882,6 +925,25 @@ class Manager{
         formPlace.appendChild(form);
     }
 
+    static async editEventType(eventTypeName, eventTypeId){
+        try {
+            let response = await fetch(`http://localhost:3000/event-types/${eventTypeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ eventTypeName: eventTypeName })
+            });
+            if (response.ok) {
+                await this.fetchTypeOfEvents();
+            } else {
+                console.error('Failed to edit event type:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error editing event type:', error);
+        }
+    }
+
     /**
      * Edita a página de formulário de membro.
      */
@@ -890,9 +952,6 @@ class Manager{
             alert('Nenhum membro selecionado!');
             return;
         }
-
-        await this.fetchFavoriteTypeEvents(this.selectedRow.children[1].textContent);
-        await this.fetchSubscribedEvents(this.selectedRow.children[1].textContent);
     
         this.modifyText('Editar membro');
         this.clearDiv('lista-elementos');
@@ -901,9 +960,11 @@ class Manager{
         let formPlace = document.getElementById('lista-elementos');
         let form = document.createElement('form');
     
-        let memberId = this.selectedRow.children[0].textContent;
-        let member = this.members.elements[memberId - 1];
-    
+        let memberId = this.selectedRow.firstChild.textContent;
+        await this.fetchFavoriteTypeEvents(memberId);
+        await this.fetchSubscribedEvents(memberId);
+        let member = this.members.findElementById(memberId);
+
         let label = document.createElement('label');
         label.for = 'member';
         label.textContent = 'Nome do membro: ';
@@ -925,7 +986,7 @@ class Manager{
     
         form.append(label, input, label1, div);
     
-        let selecteds = [];
+        let selectedTypeIds = [];
     
         this.typeOfEvents.elements.forEach(n => {
             let labelEvent = document.createElement('label');
@@ -937,7 +998,13 @@ class Manager{
             checkbox.type = 'checkbox';
             checkbox.checked = member.favoriteEvents.some(event => event.name === n.name);
     
-            selecteds.push(checkbox);
+            checkbox.addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    selectedTypeIds.push(n.id);
+                } else {
+                    selectedTypeIds = selectedTypeIds.filter(id => id !== n.id);
+                }
+            });
     
             form.appendChild(checkbox);
             form.appendChild(labelEvent);
@@ -970,11 +1037,10 @@ class Manager{
         back.value = 'Voltar';
         back.onclick = () => this.paginaMembros();
     
-        submit.addEventListener('click', (event) => {
-            member.editFavoriteEvents(this.typeOfEvents.elements.filter(event => 
-                selecteds.find(check => check.id === event.name).checked
-            ));
-            alert(`O Membro ${member.name} foi atualizado.`);
+        submit.addEventListener('click', async (event) => {
+            let subscribedEvents = this.events.elements.filter(evento => evento.members.some(m => m.name === member.name));
+            let selectedEventIds = subscribedEvents.map(event => event.id);
+            await this.editMember(input.value, memberId, selectedTypeIds, selectedEventIds);
             this.paginaMembros();
         });
         buttonDiv.append(submit, subscribeBtn, unsubscribeBtn, back);
@@ -998,22 +1064,25 @@ class Manager{
         formPlace.appendChild(form);
     }
 
-    static async editMember(memberName, memberId){
-        try{
+    static async editMember(memberName, memberId, selectedTypeIds, selectedEventIds) {
+        try {
             let response = await fetch(`http://localhost:3000/members/${memberId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ memberName: memberName })
+                body: JSON.stringify({ 
+                    name: memberName,
+                    eventTypeIds: selectedTypeIds,
+                    eventIds: selectedEventIds
+                })
             });
-            if(response.ok){
-                this.fetchMembers();
+            if (response.ok) {
+                await this.fetchMembers();
             } else {
                 console.error('Failed to edit member:', response.statusText);
             }
-        }
-        catch(error){
+        } catch (error) {
             console.error('Error editing member:', error);
         }
     }
@@ -1083,8 +1152,8 @@ class Manager{
         let formPlace = document.getElementById('lista-elementos');
         let form = document.createElement('form');
     
-        let eventId = this.selectedRow.children[0].textContent;
-        let event = this.events.elements[eventId - 1];
+        let eventId = this.selectedRow.firstChild.textContent;
+        let event = this.events.findElementById(eventId);
     
         let typeLabel = document.createElement('label');
         typeLabel.htmlFor = 'type-select';
@@ -1135,7 +1204,7 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
-        submit.addEventListener('click', (event) => {
+        submit.addEventListener('click', async (event) => {
             if (!typeSelect.value) {
                 this.showMessage('É preciso fornecer um tipo ao evento!');
                 return;
@@ -1148,9 +1217,8 @@ class Manager{
             }
             let type = this.typeOfEvents.elements.find(tp => tp.name === typeSelect.value);
             let date = new Date(dateInput.value);
-            event.type = type;
-            event.name = nameInput.value;
-            event.date = date;
+            let newEventName = nameInput.value;
+            await this.editEvent(eventId, newEventName, date, type.id);
             this.paginaEventos();
         });
     
@@ -1163,6 +1231,26 @@ class Manager{
         buttonDiv.append(submit, cancel);
         form.append(typeLabel, typeSelect, nameLabel, nameInput, dateLabel, dateInput, buttonDiv);
         formPlace.appendChild(form);
+    }
+
+    static async editEvent(eventId, eventName, eventDate, eventTypeId){
+        console.log(eventId, eventName, eventDate, eventTypeId);
+        try {
+            let response = await fetch(`http://localhost:3000/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ eventName: eventName, eventDate: eventDate, eventTypeId: eventTypeId})
+            });
+            if(response.ok){
+                await this.fetchEvents();
+            } else {
+                console.error('Failed to add event:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding event:', error);
+        }
     }
 
     /**
@@ -1188,26 +1276,35 @@ class Manager{
      * @throws Erro se o tipo de evento for favorito de um membro 
      * @throws Erro se o tipo de evento for usado por um evento.
      */
-    static deleteTypeEvent(){
-        if(this.selectedRow){
-            let id = this.selectedRow.firstChild.textContent
-            let element = this.typeOfEvents.elements[id - 1];
-
+    static async deleteTypeEvent() {
+        if (this.selectedRow) {
+            let id = parseInt(this.selectedRow.firstChild.textContent);
+            let element = this.typeOfEvents.findElementById(id);
             try {
-                if (this.members.elements.some(m => m.favoriteEvents.some(tpevent => tpevent.name === element.name))) {
+                if (this.members.elements.some(m => m.favoriteEvents.some(tpevent => tpevent.id === element.id))) {
                     throw new Error("Não pode apagar um tipo de evento que seja favorito de um membro");
-                } else if (this.events.elements.some(evnt => evnt.type.name === element.name)) {
+                } else if (this.events.elements.some(evnt => evnt.type.id === element.id)) {
                     throw new Error("Não pode apagar um tipo de evento que seja usado por um evento");
                 } else {
-                    this.typeOfEvents.removeElement(element);
+                    let response = await fetch(`http://localhost:3000/event-types/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+    
+                    if (response.ok) {
+                        await this.fetchTypeOfEvents(); // Refetch the elements
+                        this.paginaTipoEventos(); // Load the main page of the element
+                        this.selectedRow = null;
+                    } else {
+                        throw new Error('Falha ao apagar o tipo de evento: ' + response.statusText);
+                    }
                 }
-                this.paginaTipoEventos();
-                this.selectedRow = null;
             } catch (error) {
                 this.showMessage(error.message);
             }
-        }
-        else{
+        } else {
             this.showMessage('Nenhum tipo de evento selecionado!');
         }
     }
@@ -1215,38 +1312,63 @@ class Manager{
     /**
      * Deleta um membro.
      */
-    static deleteMember(){
-        if(this.selectedRow){
-            let id = this.selectedRow.firstChild.textContent
-            let element = this.members.elements[id - 1];
-            this.members.removeElement(element);
-            this.paginaMembros();
-            this.selectedRow = null;
-        }
-        else{
-            alert('Nenhum membro selecionado!');
+    static async deleteMember() {
+        if (this.selectedRow) {
+            let id = parseInt(this.selectedRow.firstChild.textContent);
+            let element = this.members.findElementById(id);
+            try {
+                let response = await fetch(`http://localhost:3000/members/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (response.ok) {
+                    await this.fetchMembers();
+
+                    this.paginaMembros();
+                    this.selectedRow = null;
+                } else {
+                    throw new Error('Falha ao apagar o membro: ' + response.statusText);
+                }
+            } catch (error) {
+                this.showMessage(error.message);
+            }
+        } else {
+            this.showMessage('Nenhum membro selecionado!');
         }
     }
 
-    static deleteEvent(){
-        if(this.selectedRow){
-            let id = this.selectedRow.firstChild.textContent
-            let element = this.events.elements[id - 1];
 
+    static async deleteEvent() {
+        if (this.selectedRow) {
+            let id = parseInt(this.selectedRow.firstChild.textContent);
+            let element = this.events.findElementById(id);
             try {
                 if (this.events.elements.some(e => e.members.some(m => m.name === element.name))) {
                     throw new Error("Não pode apagar um evento que um membro esteja inscrito!");
                 } else {
-                    this.events.removeElement(element);
+                    let response = await fetch(`http://localhost:3000/events/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+    
+                    if (response.ok) {
+                        await this.fetchEvents();
+                        this.paginaEventos();
+                        this.selectedRow = null;
+                    } else {
+                        throw new Error('Falha ao apagar o evento: ' + response.statusText);
+                    }
                 }
-                this.paginaEventos();
-                this.selectedRow = null;
             } catch (error) {
                 this.showMessage(error.message);
             }
-        }
-        else{
-            alert('Nenhum evento selecionado!');
+        } else {
+            this.showMessage('Nenhum evento selecionado!');
         }
     }
 

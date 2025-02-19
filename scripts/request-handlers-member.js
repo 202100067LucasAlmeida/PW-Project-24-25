@@ -41,9 +41,9 @@ async function updateMember(request, response) {
     }
 
     let eventIds = request.body.eventIds;
-    await connection.execute("DELETE FROM MemberEvent WHERE memberId = ?", [id]);
+    await execute(response, "DELETE FROM MemberEvent WHERE memberId = ?", [id]);
     for (let eventId of eventIds) {
-        await connection.execute("INSERT INTO MemberEvent (memberId, eventId) VALUES (?, ?)", [id, eventId]);
+        await execute(response, "INSERT INTO MemberEvent (memberId, eventId) VALUES (?, ?)", [id, eventId]);
     }
 
     response.send(rows);
@@ -57,16 +57,16 @@ async function deleteMember(request, response) {
 }
 
 async function getSubscribedEvents(request, response) {
-    let memberName = request.params.memberName;
-    let sqlCommand = "SELECT * FROM Event WHERE eventId IN (SELECT eventId FROM MemberEvent WHERE memberId IN (SELECT memberId FROM Member WHERE memberName = ?))";
-    let rows = await execute(response, sqlCommand, [memberName]);
+    let id = request.params.id;
+    let sqlCommand = "SELECT * FROM Event WHERE eventId IN (SELECT eventId FROM MemberEvent WHERE memberId = ?)";
+    let rows = await execute(response, sqlCommand, [id]);
     response.send(rows);
 }
 
 async function getFavoriteEventTypes(request, response) {
-    let memberName = request.params.memberName;
-    let sqlCommand = "SELECT * FROM EventType WHERE eventTypeId IN (SELECT eventTypeId FROM MemberEventType WHERE memberId IN (SELECT memberId FROM Member WHERE memberName = ?))";
-    let rows = await execute(response, sqlCommand, [memberName]);
+    let id = request.params.id;
+    let sqlCommand = "SELECT * FROM EventType WHERE eventTypeId IN (SELECT eventTypeId FROM MemberEventType WHERE memberId = ?)";
+    let rows = await execute(response, sqlCommand, [id]);
     response.send(rows);
 }
 

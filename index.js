@@ -29,10 +29,10 @@ app.put("/event-types/:id", eventTypeHandlers.updateEventType);
 app.delete("/event-types/:id", eventTypeHandlers.deleteEventType);
 
 // Manipuladores para eventos inscritos por membros
-app.get("/members/:memberName/subscribedEvents", memberHandlers.getSubscribedEvents);
+app.get("/members/:id/subscribedEvents", memberHandlers.getSubscribedEvents);
 
 // Manipuladores para tipos de eventos favoritos dos membros
-app.get("/members/:memberName/favoriteEventTypes", memberHandlers.getFavoriteEventTypes);
+app.get("/members/:id/favoriteEventTypes", memberHandlers.getFavoriteEventTypes);
 
 app.listen(3000, function () {
     console.log("Server running at http://localhost:3000");
