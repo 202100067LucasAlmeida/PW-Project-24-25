@@ -20,7 +20,6 @@ async function createEvent(request, response) {
     let eventName = request.body.eventName;
     let eventDate = request.body.eventDate.split("T")[0];
     let eventTypeId = request.body.eventTypeId;
-    console.log([eventName, eventDate, eventTypeId]);
     let rows = await execute(response, sqlCommand, [eventDate, eventName, eventTypeId]);
     response.send(rows);
 }
@@ -32,7 +31,7 @@ async function getAllEvents(request, response) {
 }
 
 async function updateEvent(request, response) {
-    let sqlCommand = "UPDATE Event SET eventName = ?, eventDate = ?, eventTypeId = ? WHERE id = ?";
+    let sqlCommand = "UPDATE Event SET eventName = ?, eventDate = ?, eventTypeId = ? WHERE eventId = ?";
     let eventName = request.body.name;
     let eventDate = request.body.date;
     let eventTypeId = request.body.eventTypeId;
@@ -42,7 +41,7 @@ async function updateEvent(request, response) {
 }
 
 async function deleteEvent(request, response) {
-    let sqlCommand = "DELETE FROM Event WHERE id = ?";
+    let sqlCommand = "DELETE FROM Event WHERE eventId = ?";
     let id = request.body.id;
     let rows = await execute(response, sqlCommand, id);
     response.send(rows);

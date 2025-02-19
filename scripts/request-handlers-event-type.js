@@ -29,7 +29,7 @@ async function getAllEventTypes(request, response) {
 }
 
 async function updateEventType(request, response) {
-    let sqlCommand = "UPDATE EventType SET eventTypeName = ? WHERE id = ?";
+    let sqlCommand = "UPDATE EventType SET eventTypeName = ? WHERE eventTypeId = ?";
     let eventTypeName = request.body.eventTypeName;
     let id = request.body.id;
     let rows = await execute(response, sqlCommand, [eventTypeName, id]);
@@ -37,9 +37,9 @@ async function updateEventType(request, response) {
 }
 
 async function deleteEventType(request, response) {
-    let sqlCommand = "DELETE FROM EventType WHERE id = ?";
+    let sqlCommand = "DELETE FROM EventType WHERE eventTypeId = ?";
     let id = request.body.id;
-    let rows = await execute(response, sqlCommand, id);
+    let rows = await execute(response, sqlCommand, [id]);
     response.send(rows);
 }
 

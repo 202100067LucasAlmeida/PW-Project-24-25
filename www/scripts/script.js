@@ -71,10 +71,8 @@ class ListOfElements{
      * @returns {ListOfElements} A lista de elementos.
      */
     addElement(element){
-        (!this.#elements.some(existingEvent => existingEvent.name === element.name)) ? 
-            this.#elements.push(element) : void 0;
-        
-            return this;
+        this.#elements.push(element);
+        return this;
     }
 
     /**
@@ -324,7 +322,6 @@ class Manager{
         this.members = new ListOfElements();
         memberJson.forEach(m => {
             let member = new Member(m.memberName);
-            (m.favoriteEvents === undefined) ? m.favoriteEvents = [] : member.addFavoriteEvents(m.favoriteEvents);
             this.members.addElement(member);
         });
     }
@@ -375,6 +372,36 @@ class Manager{
         typeOfEventsJson.forEach(tp => {
             let type = new Event(tp.eventTypeName);
             this.typeOfEvents.addElement(type);
+        });
+    }
+
+    /**
+     * carrega os eventos inscritos por um membro.
+     * @param {String} memberName 
+     */
+    static async fetchSubscribedEvents(memberName){
+        let response = await fetch(`http://localhost:3000/members/${memberName}/subscribedEvents`);
+        let subscribedEvents = await response.json();
+        let member = this.members.elements.find(mb => mb.name === memberName);
+        subscribedEvents.forEach(sbe => {
+            let event = this.events.elements.find(ev => ev.name === sbe.eventName);
+            event.subscribe(this.members.elements.find(mb => mb.name === memberName));
+            member.subscribeEvent(event);
+        });
+    }
+
+    /**
+     * carrega os tipos de eventos favoritos dos membros.
+     * @param {String} memberName 
+     */
+    static async fetchFavoriteTypeEvents(memberName){
+        
+        let response = await fetch(`http://localhost:3000/members/${memberName}/favoriteEventTypes`);
+        let favoriteTypeEvents = await response.json();
+        let member = this.members.elements.find(mb => mb.name === memberName);
+        favoriteTypeEvents.forEach(fte => {
+            let eventType = this.typeOfEvents.elements.find(tp => tp.name === fte.eventTypeName);
+            member.addFavoriteEvents(eventType);
         });
     }
 
@@ -548,9 +575,10 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Adicionar';
-        submit.addEventListener('click', (event) => {
+        submit.addEventListener('click', async (event) => {
             event.preventDefault();
-            this.addTypeOfEvent(input.value);
+            await this.addTypeOfEvent(input.value);
+            this.paginaTipoEventos();
         });
 
 
@@ -577,7 +605,6 @@ class Manager{
             });
             if(response.ok){
                 this.fetchTypeOfEvents();
-                this.paginaTipoEventos();
             } else {
                 console.error('Failed to add event type:', response.statusText);
             }
@@ -646,14 +673,15 @@ class Manager{
         cancel.value = 'Cancelar';
         cancel.onclick = () => this.paginaMembros();
 
-        submit.addEventListener('click', (event) => {
+        submit.addEventListener('click', async (event) => {
             if(!input.value) {
                 alert('É preciso fornecer um nome ao membro!');
                 return;
             }
-            this.addMember(input.value, this.typeOfEvents.elements.filter(event => 
+            await this.addMember(input.value, this.typeOfEvents.elements.filter(event => 
                 selecteds.find(check => check.id === event.name).checked
             ));
+            this.paginaMembros();
         });
 
         buttonDiv.append(submit, cancel);
@@ -673,7 +701,6 @@ class Manager{
             });
             if(response.ok){
                 this.fetchMembers();
-                this.paginaMembros();
             } else {
                 console.error('Failed to add member:', response.statusText);
             }
@@ -737,7 +764,7 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Adicionar';
-        submit.addEventListener('click', (event) => {
+        submit.addEventListener('click', async (event) => {
             if(!typeSelect.value) {
                 alert('É preciso fornecer um tipo ao evento!');
                 return;
@@ -752,7 +779,8 @@ class Manager{
             }
             let type = this.typeOfEvents.elements.findIndex(tp => tp.name === typeSelect.value);
             let date = new Date(dateInput.value);
-            this.addEvent(nameInput.value, date, type);
+            await this.addEvent(nameInput.value, date, type);
+            this.paginaEventos();
         });
 
         let cancel = document.createElement('input');
@@ -778,7 +806,6 @@ class Manager{
             });
             if(response.ok){
                 this.fetchEvents();
-                this.paginaEventos();
             } else {
                 console.error('Failed to add event:', response.statusText);
             }
@@ -858,11 +885,14 @@ class Manager{
     /**
      * Edita a página de formulário de membro.
      */
-    static editMemberFormPage() {
+    static async editMemberFormPage() {
         if (!this.selectedRow) {
             alert('Nenhum membro selecionado!');
             return;
         }
+
+        await this.fetchFavoriteTypeEvents(this.selectedRow.children[1].textContent);
+        await this.fetchSubscribedEvents(this.selectedRow.children[1].textContent);
     
         this.modifyText('Editar membro');
         this.clearDiv('lista-elementos');
@@ -966,6 +996,26 @@ class Manager{
 
 
         formPlace.appendChild(form);
+    }
+
+    static async editMember(memberName, memberId){
+        try{
+            let response = await fetch(`http://localhost:3000/members/${memberId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ memberName: memberName })
+            });
+            if(response.ok){
+                this.fetchMembers();
+            } else {
+                console.error('Failed to edit member:', response.statusText);
+            }
+        }
+        catch(error){
+            console.error('Error editing member:', error);
+        }
     }
 
     static loadSubscribePage(memberName){
