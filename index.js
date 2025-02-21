@@ -1,3 +1,10 @@
+"use strict";
+
+/**
+ * @author Jean Oliveira 202300095 202300095@estudantes.ips.pt
+ * @author Lucas Almeida 202100067 202100067@estudantes.ips.pt
+ */
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
