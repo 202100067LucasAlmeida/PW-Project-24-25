@@ -36,7 +36,6 @@ async function updateEvent(request, response) {
     let eventDate = request.body.eventDate.split("T")[0];
     let eventTypeId = request.body.eventTypeId;
     let id = request.params.id;
-    console.log(request.body);
     let rows = await execute(response, sqlCommand, [eventName, eventDate, eventTypeId, id]);
     response.send(rows);
 }

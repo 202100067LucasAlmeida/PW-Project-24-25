@@ -908,9 +908,10 @@ class Manager{
         submit.id = 'submit';
         submit.type = 'button';
         submit.value = 'Aplicar';
-        submit.addEventListener('click', (event) => {
+        submit.addEventListener('click', async (event) => {
             let newTypeEventName = input.value;
-            this.paginaTipoEventos(newTypeEventName, eventTypeId);
+            await this.editEventType(newTypeEventName, eventTypeId);
+            this.paginaTipoEventos();
         });
     
         let back = document.createElement('input');
@@ -1234,7 +1235,6 @@ class Manager{
     }
 
     static async editEvent(eventId, eventName, eventDate, eventTypeId){
-        console.log(eventId, eventName, eventDate, eventTypeId);
         try {
             let response = await fetch(`http://localhost:3000/events/${eventId}`, {
                 method: 'PUT',
